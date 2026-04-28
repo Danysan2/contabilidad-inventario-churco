@@ -1,61 +1,9 @@
+version: '3.8'
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: groom_gold_app
-    restart: unless-stopped
-    ports:
-      - "80:3000"
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NEXTAUTH_URL: ${NEXTAUTH_URL}
-      GOOGLE_SERVICE_ACCOUNT_EMAIL: ${GOOGLE_SERVICE_ACCOUNT_EMAIL:-}
-      GOOGLE_PRIVATE_KEY: ${GOOGLE_PRIVATE_KEY:-}
-      GOOGLE_SHEET_ID: ${GOOGLE_SHEET_ID:-}
-    depends_on:
-      db:
-        condition: service_healthy
+  web:
+    build: .
     networks:
-      - groom_network
-
-  db:
-    image: postgres:16-alpine
-    container_name: groom_gold_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-groom}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-groompassword}
-      POSTGRES_DB: ${POSTGRES_DB:-groom_gold}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-groom} -d ${POSTGRES_DB:-groom_gold}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - groom_network
-
-  migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: groom_gold_migrate
-    command: sh -c "npx prisma db push && npm run db:seed"
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - groom_network
-    restart: "no"
-
-volumes:
-  postgres_data:
-
+      - dokploy-network
 networks:
-  groom_network:
-    driver: bridge
+  dokploy-network:
+    external: true
