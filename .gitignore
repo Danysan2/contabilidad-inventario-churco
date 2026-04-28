@@ -7,3 +7,4 @@ out/
 build/
 *.log
 .DS_Store
+stitch_barber_snack_manager/
