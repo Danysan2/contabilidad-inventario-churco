@@ -40,6 +40,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   await prisma.$transaction(async (tx) => {
     for (const item of sale.items) {
       await tx.product.update({ where: { id: item.productId }, data: { stock: { increment: item.quantity } } });
+      // Remove the OUT movement that was created when the sale happened
+      await tx.stockMovement.deleteMany({
+        where: { productId: item.productId, note: `Venta ${params.id}` },
+      });
     }
     await tx.sale.delete({ where: { id: params.id } });
   });

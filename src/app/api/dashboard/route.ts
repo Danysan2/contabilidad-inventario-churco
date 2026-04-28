@@ -23,14 +23,13 @@ export async function GET(req: NextRequest) {
   else if (period === "week") prevFrom.setDate(prevFrom.getDate() - 7);
   else prevFrom.setDate(prevFrom.getDate() - 30);
 
-  const [currentSales, prevSales, lowStockProducts, topProducts, recentSales, dailyTotals] = await Promise.all([
+  const [currentSales, prevSales, allActiveProducts, topProducts, recentSales, dailyTotals] = await Promise.all([
     prisma.sale.aggregate({ where: { createdAt: { gte: from } }, _sum: { total: true }, _count: true }),
     prisma.sale.aggregate({ where: { createdAt: { gte: prevFrom, lt: from } }, _sum: { total: true }, _count: true }),
     prisma.product.findMany({
-      where: { active: true, stock: { lte: prisma.product.fields.minStock } },
+      where: { active: true },
       include: { category: true },
       orderBy: { stock: "asc" },
-      take: 10,
     }),
     prisma.saleItem.groupBy({
       by: ["productId"],
@@ -53,6 +52,8 @@ export async function GET(req: NextRequest) {
       ORDER BY date ASC
     `,
   ]);
+
+  const lowStockProducts = allActiveProducts.filter((p) => p.stock <= p.minStock).slice(0, 10);
 
   // Resolve top product names
   const topProductIds = topProducts.map((p) => p.productId);

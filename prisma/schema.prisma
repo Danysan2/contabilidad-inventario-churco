@@ -52,6 +52,9 @@ model Product {
   updatedAt      DateTime        @updatedAt
   saleItems      SaleItem[]
   stockMovements StockMovement[]
+
+  @@index([categoryId])
+  @@index([active])
 }
 
 model Sale {
@@ -64,6 +67,9 @@ model Sale {
   employeeId     String
   employee       User       @relation(fields: [employeeId], references: [id])
   items          SaleItem[]
+
+  @@index([createdAt])
+  @@index([employeeId])
 }
 
 model SaleItem {
@@ -83,5 +89,8 @@ model StockMovement {
   note      String?
   createdAt DateTime          @default(now())
   productId String
-  product   Product           @relation(fields: [productId], references: [id])
+  product   Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([productId])
+  @@index([createdAt])
 }

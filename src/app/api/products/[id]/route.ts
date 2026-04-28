@@ -16,27 +16,29 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const existing = await prisma.product.findUnique({ where: { id: params.id } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Log stock movement if stock changed
-  if (stock !== undefined && stock !== existing.stock) {
-    const diff = stock - existing.stock;
-    await prisma.stockMovement.create({
-      data: {
-        productId: params.id,
-        type: diff > 0 ? "IN" : "ADJUSTMENT",
-        quantity: Math.abs(diff),
-        note: "Actualización manual de stock",
-      },
+  const product = await prisma.$transaction(async (tx) => {
+    if (stock !== undefined && stock !== existing.stock) {
+      const diff = stock - existing.stock;
+      await tx.stockMovement.create({
+        data: {
+          productId: params.id,
+          type: diff > 0 ? "IN" : "ADJUSTMENT",
+          quantity: Math.abs(diff),
+          note: "Actualización manual de stock",
+        },
+      });
+    }
+    return tx.product.update({
+      where: { id: params.id },
+      data: { name, sku, price, stock, minStock, image, categoryId, active },
+      include: { category: true },
     });
-  }
-
-  const product = await prisma.product.update({
-    where: { id: params.id },
-    data: { name, sku, price, stock, minStock, image, categoryId, active },
-    include: { category: true },
   });
 
-  const allProducts = await prisma.product.findMany({ include: { category: true } });
-  await syncProductsToSheet(allProducts.map((p) => ({ id: p.id, name: p.name, sku: p.sku, category: p.category.name, price: Number(p.price), stock: p.stock })));
+  // Fire-and-forget sync with logging on failure
+  prisma.product.findMany({ include: { category: true } })
+    .then((all) => syncProductsToSheet(all.map((p) => ({ id: p.id, name: p.name, sku: p.sku, category: p.category.name, price: Number(p.price), stock: p.stock }))))
+    .catch((err) => console.error("[Sheets] Product sync failed for product", params.id, err));
 
   return NextResponse.json(product);
 }

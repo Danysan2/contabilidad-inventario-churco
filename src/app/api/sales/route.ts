@@ -58,6 +58,15 @@ export async function POST(req: NextRequest) {
   const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
 
   const sale = await prisma.$transaction(async (tx) => {
+    // Validate stock before any write
+    for (const item of items) {
+      const product = await tx.product.findUnique({ where: { id: item.productId }, select: { name: true, stock: true } });
+      if (!product) throw new Error(`Producto no encontrado: ${item.productId}`);
+      if (product.stock < item.quantity) {
+        throw new Error(`Stock insuficiente para "${product.name}": disponible ${product.stock}, solicitado ${item.quantity}`);
+      }
+    }
+
     const created = await tx.sale.create({
       data: {
         total,
@@ -71,7 +80,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Deduct stock
     for (const item of items) {
       await tx.product.update({
         where: { id: item.productId },
@@ -85,7 +93,7 @@ export async function POST(req: NextRequest) {
     return created;
   });
 
-  // Sync to Google Sheets (fire and forget)
+  // Sync to Google Sheets (fire and forget, with logging on failure)
   appendSaleToSheet({
     id: sale.id,
     createdAt: sale.createdAt,
@@ -94,7 +102,7 @@ export async function POST(req: NextRequest) {
     total: Number(sale.total),
   })
     .then(() => prisma.sale.update({ where: { id: sale.id }, data: { syncedToSheets: true } }))
-    .catch(() => {});
+    .catch((err) => console.error("[Sheets] Sync failed for sale", sale.id, err));
 
   return NextResponse.json(sale, { status: 201 });
 }
