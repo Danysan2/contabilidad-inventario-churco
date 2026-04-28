@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(EMPLOYEE)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sales     Sale[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  products Product[]
+}
+
+model Product {
+  id             String          @id @default(cuid())
+  name           String
+  sku            String          @unique
+  price          Decimal         @db.Decimal(10, 2)
+  stock          Int             @default(0)
+  minStock       Int             @default(5)
+  image          String?
+  active         Boolean         @default(true)
+  categoryId     String
+  category       Category        @relation(fields: [categoryId], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  saleItems      SaleItem[]
+  stockMovements StockMovement[]
+}
+
+model Sale {
+  id             String     @id @default(cuid())
+  total          Decimal    @db.Decimal(10, 2)
+  note           String?
+  syncedToSheets Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  employeeId     String
+  employee       User       @relation(fields: [employeeId], references: [id])
+  items          SaleItem[]
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model StockMovement {
+  id        String            @id @default(cuid())
+  type      StockMovementType
+  quantity  Int
+  note      String?
+  createdAt DateTime          @default(now())
+  productId String
+  product   Product           @relation(fields: [productId], references: [id])
+}
