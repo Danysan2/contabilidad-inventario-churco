@@ -33,11 +33,14 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules/.prisma    ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma    ./node_modules/@prisma
+COPY --from=builder /app/node_modules/prisma     ./node_modules/prisma
 COPY --from=builder /app/node_modules/bcryptjs   ./node_modules/bcryptjs
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./package.json
+COPY scripts/start.sh ./start.sh
 
 USER nextjs
 
 EXPOSE 3010
 
-CMD ["node", "server.js"]
+CMD ["sh", "start.sh"]
