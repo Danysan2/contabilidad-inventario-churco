@@ -323,9 +323,9 @@ export default function InventoryPage() {
 
         {loading ? (
           [...Array(5)].map((_, i) => (
-            <div key={i} className="grid grid-cols-1 md:grid-cols-[80px_2fr_1fr_1fr_1fr_140px] gap-md p-md items-center animate-pulse" style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}">
-              <div className="hidden md:block w-16 h-16 rounded" style={{ background: "var(--surface-3)" }}" />
-              <div className="h-8 rounded col-span-5" style={{ background: "var(--surface-3)" }}" />
+            <div key={i} className="grid grid-cols-1 md:grid-cols-[80px_2fr_1fr_1fr_1fr_140px] gap-md p-md items-center animate-pulse" style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}>
+              <div className="hidden md:block w-16 h-16 rounded" style={{ background: "var(--surface-3)" }} />
+              <div className="h-8 rounded col-span-5" style={{ background: "var(--surface-3)" }} />
             </div>
           ))
         ) : products.length === 0 ? (
