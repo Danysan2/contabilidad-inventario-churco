@@ -31,32 +31,134 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Decorative gold glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-container/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/3 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex" style={{ background: "var(--surface-0)" }}>
 
-      <div className="w-full max-w-sm animate-fade-in">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-surface-container-high border border-outline-variant mb-4 shadow-[0_0_30px_rgba(212,175,55,0.15)]">
-            <span className="material-symbols-outlined text-3xl text-primary icon-fill">content_cut</span>
+      {/* ── Left panel: decorative brand ── */}
+      <div
+        className="hidden lg:flex flex-col justify-between w-[480px] shrink-0 relative overflow-hidden p-12"
+        style={{
+          background: "linear-gradient(160deg, #16130b 0%, #0d0b06 60%, #1c1810 100%)",
+          borderRight: "1px solid rgba(212,175,55,0.1)",
+        }}
+      >
+        {/* Corner ornament top-right */}
+        <div
+          className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
+          style={{
+            background: "radial-gradient(circle at top right, rgba(212,175,55,0.06) 0%, transparent 70%)",
+          }}
+        />
+        {/* Corner ornament bottom-left */}
+        <div
+          className="absolute bottom-0 left-0 w-64 h-64 pointer-events-none"
+          style={{
+            background: "radial-gradient(circle at bottom left, rgba(212,175,55,0.05) 0%, transparent 70%)",
+          }}
+        />
+
+        {/* Diagonal line art */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.04]"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <pattern id="diag" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+              <line x1="0" y1="0" x2="0" y2="40" stroke="#d4af37" strokeWidth="0.5" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#diag)" />
+        </svg>
+
+        {/* Brand mark */}
+        <div>
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center mb-8"
+            style={{
+              background: "rgba(212,175,55,0.08)",
+              border: "1px solid rgba(212,175,55,0.2)",
+              boxShadow: "0 0 40px rgba(212,175,55,0.1)",
+            }}
+          >
+            <span className="material-symbols-outlined icon-fill" style={{ color: "var(--gold)", fontSize: 28 }}>
+              content_cut
+            </span>
           </div>
-          <h1 className="text-display-lg font-serif font-black text-amber-500 italic tracking-tight text-4xl leading-tight">
-            Groom &amp; Gold
+
+          <h1
+            className="font-display text-6xl font-bold italic leading-none mb-3"
+            style={{ color: "var(--gold-light)" }}
+          >
+            Groom
+            <br />
+            <span className="text-gold-gradient">&amp; Gold</span>
           </h1>
-          <p className="text-on-surface-variant text-sm font-sans mt-2">
-            Sistema de gestión para barbería
+
+          <div className="divider-gold my-6 w-24" />
+
+          <p className="font-sans text-sm leading-relaxed" style={{ color: "rgba(234,225,212,0.45)" }}>
+            Sistema de gestión exclusivo
+            <br />
+            para barbería de alta gama.
           </p>
         </div>
 
-        {/* Form card */}
-        <div className="bg-surface-container border border-outline-variant rounded-xl p-8 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-          <h2 className="text-headline-sm font-serif text-on-surface mb-6">Iniciar Sesión</h2>
+        {/* Bottom tagline */}
+        <div>
+          <p className="font-display italic text-2xl" style={{ color: "rgba(212,175,55,0.3)" }}>
+            &ldquo;El arte del buen corte.&rdquo;
+          </p>
+        </div>
+      </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      {/* ── Right panel: form ── */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
+
+        {/* Subtle center glow */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(212,175,55,0.03) 0%, transparent 80%)",
+          }}
+        />
+
+        <div className="w-full max-w-sm animate-fade-up">
+
+          {/* Mobile logo (only on small screens) */}
+          <div className="lg:hidden text-center mb-10">
+            <div
+              className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-4"
+              style={{
+                background: "rgba(212,175,55,0.08)",
+                border: "1px solid rgba(212,175,55,0.2)",
+                boxShadow: "0 0 30px rgba(212,175,55,0.1)",
+              }}
+            >
+              <span className="material-symbols-outlined icon-fill" style={{ color: "var(--gold)", fontSize: 26 }}>
+                content_cut
+              </span>
+            </div>
+            <h1 className="font-display text-4xl font-bold italic text-gold-gradient">Groom &amp; Gold</h1>
+          </div>
+
+          {/* Heading */}
+          <div className="mb-10">
+            <h2 className="font-display text-3xl font-semibold" style={{ color: "#eae1d4" }}>
+              Bienvenido
+            </h2>
+            <p className="font-sans text-sm mt-1" style={{ color: "rgba(234,225,212,0.45)" }}>
+              Ingresa tus credenciales para continuar
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-8">
             <div className="flex flex-col gap-1">
-              <label className="font-label-caps text-label-caps text-on-surface-variant">EMAIL</label>
+              <label
+                className="font-sans text-[10px] font-bold uppercase tracking-[0.15em]"
+                style={{ color: "rgba(212,175,55,0.7)" }}
+              >
+                Correo electrónico
+              </label>
               <input
                 type="email"
                 value={email}
@@ -64,12 +166,17 @@ export default function LoginPage() {
                 required
                 autoComplete="email"
                 placeholder="tu@email.com"
-                className="w-full bg-surface-container-high text-on-surface px-4 py-3 rounded border border-outline-variant focus:border-primary focus:ring-0 outline-none font-sans text-sm placeholder-outline transition-colors"
+                className="input-premium"
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="font-label-caps text-label-caps text-on-surface-variant">CONTRASEÑA</label>
+              <label
+                className="font-sans text-[10px] font-bold uppercase tracking-[0.15em]"
+                style={{ color: "rgba(212,175,55,0.7)" }}
+              >
+                Contraseña
+              </label>
               <input
                 type="password"
                 value={password}
@@ -77,13 +184,20 @@ export default function LoginPage() {
                 required
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="w-full bg-surface-container-high text-on-surface px-4 py-3 rounded border border-outline-variant focus:border-primary focus:ring-0 outline-none font-sans text-sm placeholder-outline transition-colors"
+                className="input-premium"
               />
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 bg-error-container/30 border border-error/30 rounded px-3 py-2 text-sm text-error">
-                <span className="material-symbols-outlined text-[16px]">error</span>
+              <div
+                className="flex items-center gap-2 px-4 py-3 rounded text-sm font-sans animate-fade-in"
+                style={{
+                  background: "rgba(220,38,38,0.08)",
+                  border: "1px solid rgba(220,38,38,0.2)",
+                  color: "#f87171",
+                }}
+              >
+                <span className="material-symbols-outlined icon-sm">error</span>
                 {error}
               </div>
             )}
@@ -91,26 +205,29 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary-container text-on-primary font-label-caps text-label-caps py-3 px-6 rounded flex items-center justify-center gap-2 transition-all hover:bg-primary hover:shadow-[0_0_20px_rgba(212,175,55,0.2)] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              className="btn-gold w-full py-4 rounded flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
-                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                  Verificando...
+                  <span className="material-symbols-outlined icon-sm animate-spin">progress_activity</span>
+                  Verificando…
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[18px]">login</span>
-                  Ingresar
+                  <span className="material-symbols-outlined icon-sm">login</span>
+                  Ingresar al sistema
                 </>
               )}
             </button>
           </form>
-        </div>
 
-        <p className="text-center text-xs text-on-surface-variant mt-6 font-sans">
-          ¿Problemas para ingresar? Contacta al administrador.
-        </p>
+          <p
+            className="text-center font-sans text-xs mt-10"
+            style={{ color: "rgba(234,225,212,0.3)" }}
+          >
+            ¿Problemas para ingresar? Contacta al administrador.
+          </p>
+        </div>
       </div>
     </div>
   );

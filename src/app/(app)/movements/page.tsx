@@ -30,30 +30,36 @@ function SaleDetailModal({ sale, onClose, onDelete, isAdmin }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-surface-container border border-outline-variant rounded-xl w-full max-w-md animate-slide-up shadow-2xl max-h-[85vh] flex flex-col">
-        <div className="p-lg border-b border-outline-variant flex items-center justify-between">
+      <div className="card-premium rounded-xl w-full max-w-md animate-slide-up shadow-2xl max-h-[85vh] flex flex-col">
+        <div
+          className="p-lg flex items-center justify-between"
+          style={{ borderBottom: "1px solid rgba(212,175,55,0.1)" }}
+        >
           <div>
-            <h3 className="font-serif text-headline-sm text-on-surface">Detalle de Venta</h3>
-            <p className="text-xs text-on-surface-variant font-sans mt-0.5">
+            <h3 className="font-display text-xl font-semibold" style={{ color: "#eae1d4" }}>Detalle de Venta</h3>
+            <p className="font-sans text-xs mt-0.5" style={{ color: "rgba(234,225,212,0.4)" }}>
               {new Date(sale.createdAt).toLocaleString("es-MX", { dateStyle: "full", timeStyle: "short" })}
             </p>
           </div>
-          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface transition-colors">
+          <button onClick={onClose} style={{ color: "rgba(234,225,212,0.4)" }} className="hover:text-white transition-colors">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
         <div className="p-lg overflow-y-auto flex-1">
           {/* Employee */}
-          <div className="flex items-center gap-sm mb-lg pb-lg border-b border-outline-variant">
-            <span className="material-symbols-outlined text-on-surface-variant icon-fill">person</span>
+          <div
+            className="flex items-center gap-sm mb-lg pb-lg"
+            style={{ borderBottom: "1px solid rgba(212,175,55,0.08)" }}
+          >
+            <span className="material-symbols-outlined icon-fill" style={{ color: "rgba(212,175,55,0.5)" }}>person</span>
             <div>
-              <div className="text-on-surface font-sans text-sm font-semibold">{sale.employee.name}</div>
-              <div className="text-on-surface-variant text-xs">Empleado registrador</div>
+              <div className="font-sans text-sm font-semibold" style={{ color: "#eae1d4" }}>{sale.employee.name}</div>
+              <div className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.4)" }}>Empleado registrador</div>
             </div>
             {sale.syncedToSheets && (
               <div className="ml-auto flex items-center gap-1 text-xs text-green-400">
-                <span className="material-symbols-outlined text-[14px]">sync</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>sync</span>
                 Sheets
               </div>
             )}
@@ -62,14 +68,18 @@ function SaleDetailModal({ sale, onClose, onDelete, isAdmin }: {
           {/* Items */}
           <div className="flex flex-col gap-sm mb-lg">
             {sale.items.map((item, i) => (
-              <div key={i} className="flex justify-between items-center py-2 border-b border-outline-variant last:border-0">
+              <div
+                key={i}
+                className="flex justify-between items-center py-2"
+                style={{ borderBottom: "1px solid rgba(212,175,55,0.07)" }}
+              >
                 <div>
-                  <div className="text-on-surface font-sans text-sm">{item.product.name}</div>
-                  <div className="text-on-surface-variant text-xs">
+                  <div className="font-sans text-sm" style={{ color: "#eae1d4" }}>{item.product.name}</div>
+                  <div className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.4)" }}>
                     {item.quantity} × ${Number(item.unitPrice).toLocaleString("es-MX")}
                   </div>
                 </div>
-                <span className="text-primary font-bold font-sans text-sm">
+                <span className="font-display font-bold" style={{ color: "var(--gold-light)" }}>
                   ${(item.quantity * Number(item.unitPrice)).toLocaleString("es-MX")}
                 </span>
               </div>
@@ -77,37 +87,55 @@ function SaleDetailModal({ sale, onClose, onDelete, isAdmin }: {
           </div>
 
           {sale.note && (
-            <div className="bg-surface-container-high border border-outline-variant rounded px-3 py-2 mb-lg">
-              <span className="font-label-caps text-label-caps text-on-surface-variant block mb-1">NOTA</span>
-              <span className="font-sans text-sm text-on-surface">{sale.note}</span>
+            <div
+              className="rounded px-3 py-2 mb-lg"
+              style={{ background: "rgba(212,175,55,0.05)", border: "1px solid rgba(212,175,55,0.12)" }}
+            >
+              <span className="font-sans text-[10px] uppercase tracking-widest block mb-1" style={{ color: "rgba(212,175,55,0.6)" }}>Nota</span>
+              <span className="font-sans text-sm" style={{ color: "#eae1d4" }}>{sale.note}</span>
             </div>
           )}
 
           {/* Total */}
           <div className="flex justify-between items-center pt-2">
-            <span className="font-label-caps text-label-caps text-on-surface-variant">TOTAL</span>
-            <span className="font-serif text-2xl text-primary font-bold">${Number(sale.total).toLocaleString("es-MX")}</span>
+            <span className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>Total</span>
+            <span className="font-display text-2xl font-bold text-gold-gradient">${Number(sale.total).toLocaleString("es-MX")}</span>
           </div>
         </div>
 
         {isAdmin && (
-          <div className="p-lg border-t border-outline-variant">
+          <div className="p-lg" style={{ borderTop: "1px solid rgba(212,175,55,0.1)" }}>
             {confirmDelete ? (
               <div className="flex gap-sm">
-                <button onClick={() => setConfirmDelete(false)}
-                  className="flex-1 bg-surface-container-high border border-outline-variant text-on-surface py-2 rounded font-label-caps text-label-caps text-xs">
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="flex-1 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(212,175,55,0.1)", color: "rgba(234,225,212,0.5)" }}
+                >
                   Cancelar
                 </button>
-                <button onClick={handleDelete} disabled={deleting}
-                  className="flex-1 bg-error-container text-on-error-container py-2 rounded font-label-caps text-label-caps text-xs flex items-center justify-center gap-1 disabled:opacity-50">
-                  {deleting ? <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span> : <span className="material-symbols-outlined text-[14px]">delete</span>}
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="flex-1 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 disabled:opacity-50"
+                  style={{ background: "rgba(220,38,38,0.15)", border: "1px solid rgba(220,38,38,0.3)", color: "#f87171" }}
+                >
+                  {deleting
+                    ? <span className="material-symbols-outlined icon-xs animate-spin">progress_activity</span>
+                    : <span className="material-symbols-outlined icon-xs">delete</span>
+                  }
                   Confirmar eliminación
                 </button>
               </div>
             ) : (
-              <button onClick={() => setConfirmDelete(true)}
-                className="w-full flex items-center justify-center gap-2 text-error border border-error/30 hover:bg-error-container/20 py-2 rounded font-label-caps text-label-caps transition-colors">
-                <span className="material-symbols-outlined text-[16px]">delete</span>
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
+                style={{ color: "#f87171", border: "1px solid rgba(220,38,38,0.2)" }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(220,38,38,0.06)")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
+              >
+                <span className="material-symbols-outlined icon-sm">delete</span>
                 Eliminar Venta
               </button>
             )}
@@ -163,21 +191,23 @@ export default function MovementsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl">
         <div>
-          <h2 className="font-serif text-headline-md text-on-surface mb-xs">Movimientos</h2>
-          <p className="text-on-surface-variant font-sans text-sm">
+          <h2 className="font-display text-4xl font-bold" style={{ color: "#eae1d4" }}>Movimientos</h2>
+          <p className="font-sans text-sm mt-1" style={{ color: "rgba(234,225,212,0.45)" }}>
             Historial de ventas registradas.
           </p>
         </div>
         {/* Summary chips */}
         {!loading && (
           <div className="flex items-center gap-sm">
-            <div className="bg-surface-container border border-outline-variant rounded-lg px-4 py-2 text-center">
-              <div className="font-label-caps text-label-caps text-on-surface-variant">VENTAS</div>
-              <div className="font-serif text-xl text-on-surface font-bold">{total}</div>
+            <div
+              className="card-premium rounded-lg px-4 py-2 text-center"
+            >
+              <div className="font-sans text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.55)" }}>Ventas</div>
+              <div className="font-display text-xl font-bold" style={{ color: "#eae1d4" }}>{total}</div>
             </div>
-            <div className="bg-surface-container border border-outline-variant rounded-lg px-4 py-2 text-center">
-              <div className="font-label-caps text-label-caps text-on-surface-variant">TOTAL MOSTRADO</div>
-              <div className="font-serif text-xl text-primary font-bold">${totalRevenue.toLocaleString("es-MX")}</div>
+            <div className="card-premium rounded-lg px-4 py-2 text-center">
+              <div className="font-sans text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.55)" }}>Total mostrado</div>
+              <div className="font-display text-xl font-bold text-gold-gradient">${totalRevenue.toLocaleString("es-MX")}</div>
             </div>
           </div>
         )}
@@ -185,29 +215,40 @@ export default function MovementsPage() {
 
       {/* Date filters */}
       <div className="flex flex-col sm:flex-row gap-sm mb-lg">
-        <div className="flex flex-col gap-1">
-          <label className="font-label-caps text-label-caps text-on-surface-variant">DESDE</label>
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-            className="bg-surface-container text-on-surface px-4 py-2 rounded border border-outline-variant focus:border-primary outline-none font-sans text-sm"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="font-label-caps text-label-caps text-on-surface-variant">HASTA</label>
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-            className="bg-surface-container text-on-surface px-4 py-2 rounded border border-outline-variant focus:border-primary outline-none font-sans text-sm"
-          />
-        </div>
+        {[
+          { label: "Desde", value: dateFrom, onChange: (v: string) => { setDateFrom(v); setPage(1); } },
+          { label: "Hasta", value: dateTo, onChange: (v: string) => { setDateTo(v); setPage(1); } },
+        ].map(({ label, value, onChange }) => (
+          <div key={label} className="flex flex-col gap-1">
+            <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
+              {label}
+            </label>
+            <input
+              type="date"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              className="px-4 py-2 rounded font-sans text-sm outline-none transition-colors"
+              style={{
+                background: "var(--surface-2)",
+                border: "1px solid rgba(212,175,55,0.1)",
+                color: "#eae1d4",
+              }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(212,175,55,0.35)")}
+              onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(212,175,55,0.1)")}
+            />
+          </div>
+        ))}
         {(dateFrom || dateTo) && (
           <div className="flex items-end">
             <button
               onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-              className="px-4 py-2 text-on-surface-variant hover:text-on-surface border border-outline-variant rounded font-label-caps text-label-caps transition-colors"
+              className="px-4 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
+              style={{
+                color: "rgba(234,225,212,0.45)",
+                border: "1px solid rgba(212,175,55,0.1)",
+              }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#eae1d4")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(234,225,212,0.45)")}
             >
               Limpiar
             </button>
@@ -216,9 +257,12 @@ export default function MovementsPage() {
       </div>
 
       {/* Sales list */}
-      <div className="bg-[#1C1C1C] border border-[#2A2A2A] rounded-lg overflow-hidden">
+      <div className="card-premium rounded-lg overflow-hidden">
         {/* Table header (desktop) */}
-        <div className="hidden md:grid grid-cols-[1fr_2fr_1fr_1fr_80px] gap-md p-md border-b border-[#2A2A2A] bg-surface-container-lowest font-label-caps text-label-caps text-on-surface-variant">
+        <div
+          className="hidden md:grid grid-cols-[1fr_2fr_1fr_1fr_80px] gap-md p-md font-sans text-[10px] font-bold uppercase tracking-wider"
+          style={{ borderBottom: "1px solid rgba(212,175,55,0.08)", color: "rgba(212,175,55,0.5)" }}
+        >
           <div>Fecha y Hora</div>
           <div>Productos</div>
           <div>{isAdmin ? "Empleado" : "Nota"}</div>
@@ -228,8 +272,8 @@ export default function MovementsPage() {
 
         {loading ? (
           [...Array(8)].map((_, i) => (
-            <div key={i} className="p-md border-b border-[#2A2A2A] animate-pulse">
-              <div className="h-8 bg-[#2A2A2A] rounded w-full" />
+            <div key={i} className="p-md animate-pulse" style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}>
+              <div className="h-8 rounded w-full" style={{ background: "var(--surface-3)" }} />
             </div>
           ))
         ) : sales.length === 0 ? (
@@ -242,7 +286,10 @@ export default function MovementsPage() {
             <button
               key={sale.id}
               onClick={() => setSelectedSale(sale)}
-              className="w-full grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr_1fr_80px] gap-y-1 gap-x-md p-md border-b border-[#2A2A2A] items-center hover:bg-surface-container transition-colors text-left group"
+              className="w-full grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr_1fr_80px] gap-y-1 gap-x-md p-md items-center transition-colors text-left group"
+              style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(212,175,55,0.03)")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
             >
               {/* Date */}
               <div className="text-on-surface-variant font-sans text-xs">
@@ -261,8 +308,8 @@ export default function MovementsPage() {
 
               {/* Total */}
               <div className="flex justify-between md:block text-right">
-                <span className="md:hidden text-on-surface-variant text-xs font-label-caps">TOTAL:</span>
-                <span className="text-primary font-serif font-bold">${Number(sale.total).toLocaleString("es-MX")}</span>
+                <span className="md:hidden font-sans text-[10px] uppercase tracking-wider" style={{ color: "rgba(212,175,55,0.55)" }}>Total:</span>
+                <span className="font-display font-bold" style={{ color: "var(--gold-light)" }}>${Number(sale.total).toLocaleString("es-MX")}</span>
               </div>
 
               {/* Sync status */}
@@ -285,19 +332,21 @@ export default function MovementsPage() {
           <button
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
-            className="w-8 h-8 flex items-center justify-center border border-outline-variant rounded text-on-surface-variant hover:text-on-surface disabled:opacity-30 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-30"
+            style={{ border: "1px solid rgba(212,175,55,0.15)", color: "rgba(234,225,212,0.45)" }}
           >
-            <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_left</span>
           </button>
-          <span className="font-sans text-sm text-on-surface-variant">
+          <span className="font-sans text-sm" style={{ color: "rgba(234,225,212,0.45)" }}>
             Página {page} de {totalPages}
           </span>
           <button
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="w-8 h-8 flex items-center justify-center border border-outline-variant rounded text-on-surface-variant hover:text-on-surface disabled:opacity-30 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-30"
+            style={{ border: "1px solid rgba(212,175,55,0.15)", color: "rgba(234,225,212,0.45)" }}
           >
-            <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_right</span>
           </button>
         </div>
       )}

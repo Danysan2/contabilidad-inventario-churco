@@ -87,10 +87,21 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-surface-container border border-outline-variant rounded-xl w-full max-w-md animate-slide-up shadow-2xl">
-        <div className="p-lg border-b border-outline-variant flex items-center justify-between">
-          <h3 className="font-serif text-headline-sm text-on-surface">Confirmar Venta</h3>
-          <button onClick={onCancel} className="text-on-surface-variant hover:text-on-surface transition-colors">
+      <div
+        className="card-premium rounded-xl w-full max-w-md animate-slide-up shadow-2xl"
+      >
+        <div
+          className="p-lg flex items-center justify-between"
+          style={{ borderBottom: "1px solid rgba(212,175,55,0.1)" }}
+        >
+          <h3 className="font-display text-xl font-semibold" style={{ color: "#eae1d4" }}>
+            Confirmar Venta
+          </h3>
+          <button
+            onClick={onCancel}
+            style={{ color: "rgba(234,225,212,0.4)" }}
+            className="transition-colors hover:text-white"
+          >
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -98,51 +109,68 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading }: {
         <div className="p-lg flex flex-col gap-sm">
           <div className="max-h-48 overflow-y-auto flex flex-col gap-sm">
             {cart.map((item) => (
-              <div key={item.product.id} className="flex justify-between items-center py-2 border-b border-outline-variant last:border-0">
+              <div
+                key={item.product.id}
+                className="flex justify-between items-center py-2"
+                style={{ borderBottom: "1px solid rgba(212,175,55,0.07)" }}
+              >
                 <div>
-                  <div className="text-on-surface font-sans text-sm">{item.product.name}</div>
-                  <div className="text-on-surface-variant text-xs">x{item.quantity} · ${Number(item.product.price).toLocaleString("es-MX")} c/u</div>
+                  <div className="font-sans text-sm" style={{ color: "#eae1d4" }}>{item.product.name}</div>
+                  <div className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.4)" }}>
+                    x{item.quantity} · ${Number(item.product.price).toLocaleString("es-MX")} c/u
+                  </div>
                 </div>
-                <span className="text-primary font-bold font-sans text-sm">
+                <span className="font-display font-bold" style={{ color: "var(--gold-light)" }}>
                   ${(item.quantity * Number(item.product.price)).toLocaleString("es-MX")}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="flex justify-between items-center pt-2">
-            <span className="font-label-caps text-label-caps text-on-surface-variant">TOTAL</span>
-            <span className="font-serif text-2xl text-primary font-bold">${total.toLocaleString("es-MX")}</span>
+          <div className="flex justify-between items-center pt-3">
+            <span className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
+              Total
+            </span>
+            <span className="font-display text-2xl font-bold text-gold-gradient">
+              ${total.toLocaleString("es-MX")}
+            </span>
           </div>
 
           <div className="flex flex-col gap-1 mt-2">
-            <label className="font-label-caps text-label-caps text-on-surface-variant">NOTA (OPCIONAL)</label>
+            <label className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
+              Nota (opcional)
+            </label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Ej: Mesa 3, Cortesía VIP..."
-              className="bg-surface-container-high text-on-surface px-4 py-2 rounded border border-outline-variant focus:border-primary outline-none font-sans text-sm placeholder-outline"
+              placeholder="Ej: Mesa 3, Cortesía VIP…"
+              className="input-premium"
             />
           </div>
         </div>
 
-        <div className="p-lg border-t border-outline-variant flex gap-sm">
+        <div className="p-lg flex gap-sm" style={{ borderTop: "1px solid rgba(212,175,55,0.1)" }}>
           <button
             onClick={onCancel}
-            className="flex-1 bg-surface-container-high border border-outline-variant text-on-surface py-3 rounded font-label-caps text-label-caps hover:bg-surface-container-highest transition-colors"
+            className="flex-1 py-3 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(212,175,55,0.1)",
+              color: "rgba(234,225,212,0.5)",
+            }}
           >
             Cancelar
           </button>
           <button
             onClick={() => onConfirm(note)}
             disabled={loading}
-            className="flex-2 flex-grow bg-primary-container text-on-primary py-3 px-6 rounded font-label-caps text-label-caps flex items-center justify-center gap-2 hover:bg-primary hover:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all disabled:opacity-50"
+            className="btn-gold flex-grow py-3 px-6 rounded flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading ? (
-              <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+              <span className="material-symbols-outlined icon-sm animate-spin">progress_activity</span>
             ) : (
-              <span className="material-symbols-outlined text-[18px]">check_circle</span>
+              <span className="material-symbols-outlined icon-sm">check_circle</span>
             )}
             Registrar Venta
           </button>
@@ -240,20 +268,22 @@ export default function POSPage() {
       {/* Page header (desktop) */}
       <div className="hidden md:flex items-end justify-between mb-xl">
         <div>
-          <h2 className="font-serif text-headline-md text-on-surface mb-xs">Punto de Venta</h2>
-          <p className="text-on-surface-variant font-sans text-sm">Selecciona productos y registra ventas rápidamente.</p>
+          <h2 className="font-display text-4xl font-bold" style={{ color: "#eae1d4" }}>Punto de Venta</h2>
+          <p className="font-sans text-sm mt-1" style={{ color: "rgba(234,225,212,0.45)" }}>
+            Selecciona productos y registra ventas rápidamente.
+          </p>
         </div>
         {cart.length > 0 && (
           <div className="flex items-center gap-md">
             <div className="text-right">
-              <div className="font-label-caps text-label-caps text-on-surface-variant">TOTAL</div>
-              <div className="font-serif text-2xl text-primary font-bold">${cartTotal.toLocaleString("es-MX")}</div>
+              <div className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>TOTAL</div>
+              <div className="font-display text-2xl font-bold text-gold-gradient">${cartTotal.toLocaleString("es-MX")}</div>
             </div>
             <button
               onClick={() => setShowConfirm(true)}
-              className="bg-primary-container text-on-primary font-label-caps text-label-caps py-3 px-6 rounded flex items-center gap-2 hover:bg-primary hover:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all"
+              className="btn-gold py-3 px-6 rounded flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-[18px]">point_of_sale</span>
+              <span className="material-symbols-outlined icon-sm">point_of_sale</span>
               Cobrar · {cartCount} {cartCount === 1 ? "ítem" : "ítems"}
             </button>
           </div>
@@ -263,42 +293,48 @@ export default function POSPage() {
       {/* Search */}
       <div className="mb-lg flex gap-sm">
         <div className="relative flex-grow">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+          <span
+            className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 icon-sm"
+            style={{ color: "rgba(153,144,124,0.5)" }}
+          >
+            search
+          </span>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar producto..."
-            className="w-full bg-[#1C1C1C] border border-[#2A2A2A] rounded-lg py-3 pl-10 pr-4 text-on-background font-sans text-sm focus:border-primary-container focus:ring-0 focus:outline-none placeholder-outline transition-colors"
+            placeholder="Buscar producto…"
+            className="w-full rounded-lg py-3 pl-10 pr-4 font-sans text-sm outline-none transition-colors"
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid rgba(212,175,55,0.1)",
+              color: "#eae1d4",
+            }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(212,175,55,0.35)")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(212,175,55,0.1)")}
           />
         </div>
       </div>
 
       {/* Category chips */}
-      <div className="flex gap-sm overflow-x-auto pb-sm mb-lg -mx-container-margin px-container-margin md:mx-0 md:px-0 hide-scrollbar">
-        <button
-          onClick={() => setActiveCategory("all")}
-          className={`whitespace-nowrap font-label-caps text-label-caps px-4 py-2 rounded-full border transition-colors ${
-            activeCategory === "all"
-              ? "bg-primary-container/20 text-primary-container border-primary-container/30"
-              : "bg-[#1C1C1C] text-on-surface-variant border-[#2A2A2A]"
-          }`}
-        >
-          TODOS
-        </button>
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.slug)}
-            className={`whitespace-nowrap font-label-caps text-label-caps px-4 py-2 rounded-full border transition-colors ${
-              activeCategory === cat.slug
-                ? "bg-primary-container/20 text-primary-container border-primary-container/30"
-                : "bg-[#1C1C1C] text-on-surface-variant border-[#2A2A2A]"
-            }`}
-          >
-            {cat.name.toUpperCase()}
-          </button>
-        ))}
+      <div className="flex gap-2 overflow-x-auto pb-sm mb-lg -mx-container-margin px-container-margin md:mx-0 md:px-0 hide-scrollbar">
+        {[{ id: "all", slug: "all", name: "Todos" }, ...categories].map((cat) => {
+          const isActive = activeCategory === cat.slug;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.slug)}
+              className="whitespace-nowrap font-sans text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full transition-all"
+              style={
+                isActive
+                  ? { background: "rgba(212,175,55,0.15)", color: "var(--gold-light)", border: "1px solid rgba(212,175,55,0.35)" }
+                  : { background: "var(--surface-2)", color: "rgba(234,225,212,0.4)", border: "1px solid rgba(212,175,55,0.06)" }
+              }
+            >
+              {cat.name}
+            </button>
+          );
+        })}
       </div>
 
       {/* Product grid */}
@@ -333,27 +369,38 @@ export default function POSPage() {
 
       {/* Floating order summary (mobile) */}
       {cart.length > 0 && (
-        <div className="fixed bottom-[72px] left-0 w-full px-container-margin z-40 pb-sm md:hidden">
-          <div className="bg-[#1C1C1C] border border-[#2A2A2A] rounded-xl p-4 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+        <div className="fixed bottom-[72px] left-0 w-full px-4 z-40 pb-2 md:hidden">
+          <div
+            className="rounded-xl p-4 flex items-center justify-between shadow-2xl"
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid rgba(212,175,55,0.2)",
+              boxShadow: "0 -8px 32px rgba(0,0,0,0.6)",
+            }}
+          >
             <div>
-              <p className="font-label-caps text-label-caps text-on-surface-variant mb-1">ORDEN ACTUAL</p>
-              <p className="font-sans text-sm font-bold text-on-background">
+              <p className="font-sans text-[9px] uppercase tracking-widest mb-1" style={{ color: "rgba(212,175,55,0.55)" }}>
+                Orden actual
+              </p>
+              <p className="font-sans text-sm font-bold" style={{ color: "#eae1d4" }}>
                 {cartCount} {cartCount === 1 ? "artículo" : "artículos"}
               </p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="font-label-caps text-label-caps text-on-surface-variant mb-1">TOTAL</p>
-                <p className="font-serif text-xl text-primary-container font-bold">
+                <p className="font-sans text-[9px] uppercase tracking-widest mb-1" style={{ color: "rgba(212,175,55,0.55)" }}>
+                  Total
+                </p>
+                <p className="font-display text-xl font-bold text-gold-gradient">
                   ${cartTotal.toLocaleString("es-MX")}
                 </p>
               </div>
               <button
                 onClick={() => setShowConfirm(true)}
-                className="bg-primary-container text-black font-sans text-sm font-bold py-3 px-5 rounded-lg flex items-center gap-2 active:shadow-[0_0_15px_rgba(212,175,55,0.2)] transition-shadow"
+                className="btn-gold py-3 px-5 rounded-lg flex items-center gap-2"
               >
-                COBRAR
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                Cobrar
+                <span className="material-symbols-outlined icon-sm">arrow_forward</span>
               </button>
             </div>
           </div>

@@ -22,46 +22,106 @@ export default function Sidebar() {
   const visible = navItems.filter((i) => !i.adminOnly || isAdmin);
 
   return (
-    <nav className="bg-zinc-900 border-r border-zinc-800 w-64 hidden md:flex flex-col h-screen sticky top-0">
+    <nav
+      className="w-64 hidden md:flex flex-col h-screen sticky top-0"
+      style={{
+        background: "linear-gradient(180deg, var(--surface-1) 0%, var(--surface-0) 100%)",
+        borderRight: "1px solid rgba(212,175,55,0.08)",
+      }}
+    >
+      {/* Brand */}
+      <div
+        className="px-6 py-5 flex items-center gap-3"
+        style={{ borderBottom: "1px solid rgba(212,175,55,0.08)" }}
+      >
+        <div
+          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+          style={{
+            background: "rgba(212,175,55,0.1)",
+            border: "1px solid rgba(212,175,55,0.2)",
+          }}
+        >
+          <span
+            className="material-symbols-outlined icon-fill"
+            style={{ color: "var(--gold)", fontSize: 18 }}
+          >
+            content_cut
+          </span>
+        </div>
+        <span
+          className="font-display text-xl font-bold italic"
+          style={{ color: "var(--gold-light)" }}
+        >
+          Groom &amp; Gold
+        </span>
+      </div>
+
       {/* User info */}
-      <div className="p-lg border-b border-zinc-800 flex items-center gap-md">
-        <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center overflow-hidden shrink-0">
-          <span className="material-symbols-outlined text-outline">person</span>
+      <div
+        className="px-5 py-4 flex items-center gap-3"
+        style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}
+      >
+        <div
+          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold font-display"
+          style={{
+            background: "rgba(212,175,55,0.12)",
+            border: "1px solid rgba(212,175,55,0.2)",
+            color: "var(--gold)",
+          }}
+        >
+          {(session?.user?.name ?? "U")[0].toUpperCase()}
         </div>
         <div className="overflow-hidden">
-          <h2 className="text-on-surface truncate text-sm font-semibold">{session?.user?.name ?? "Usuario"}</h2>
-          <p className="text-xs text-on-surface-variant truncate">
+          <p
+            className="font-sans text-sm font-semibold truncate"
+            style={{ color: "#eae1d4" }}
+          >
+            {session?.user?.name ?? "Usuario"}
+          </p>
+          <p
+            className="font-sans text-[10px] uppercase tracking-widest truncate"
+            style={{ color: "rgba(212,175,55,0.55)" }}
+          >
             {isAdmin ? "Administrador" : "Empleado"}
           </p>
         </div>
       </div>
 
-      {/* New sale shortcut */}
-      <div className="p-4 border-b border-zinc-800">
-        <Link
-          href="/pos"
-          className="w-full bg-surface-container-high hover:bg-surface-container-highest text-primary border border-outline-variant py-2 px-4 rounded flex items-center justify-center gap-sm transition-colors font-label-caps text-label-caps"
-        >
-          <span className="material-symbols-outlined text-[18px]">add</span>
+      {/* Nueva Venta CTA */}
+      <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}>
+        <Link href="/pos" className="btn-gold w-full py-2.5 rounded flex items-center justify-center gap-2">
+          <span className="material-symbols-outlined icon-sm">add</span>
           Nueva Venta
         </Link>
       </div>
 
-      {/* Nav links */}
-      <ul className="flex-1 py-4 flex flex-col gap-unit overflow-y-auto">
+      {/* Nav */}
+      <ul className="flex-1 py-3 flex flex-col overflow-y-auto hide-scrollbar">
         {visible.map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`flex items-center gap-md pl-4 py-3 transition-all font-sans text-sm font-medium tracking-wide ${
-                  active
-                    ? "text-primary border-l-2 border-primary bg-zinc-800/50"
-                    : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                className={`flex items-center gap-3 px-5 py-3 transition-all font-sans text-sm font-medium ${
+                  active ? "nav-active-glow" : ""
                 }`}
+                style={{
+                  color: active ? "var(--gold-light)" : "rgba(234,225,212,0.45)",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) (e.currentTarget as HTMLElement).style.color = "#eae1d4";
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) (e.currentTarget as HTMLElement).style.color = "rgba(234,225,212,0.45)";
+                }}
               >
-                <span className={`material-symbols-outlined ${active ? "icon-fill" : ""}`}>{item.icon}</span>
+                <span
+                  className={`material-symbols-outlined ${active ? "icon-fill" : ""}`}
+                  style={{ fontSize: 20 }}
+                >
+                  {item.icon}
+                </span>
                 {item.label}
               </Link>
             </li>
@@ -70,12 +130,21 @@ export default function Sidebar() {
       </ul>
 
       {/* Logout */}
-      <div className="p-4 border-t border-zinc-800">
+      <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(212,175,55,0.06)" }}>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex items-center gap-md text-zinc-400 pl-4 py-3 hover:bg-zinc-800 hover:text-white transition-all w-full rounded font-sans text-sm font-medium"
+          className="flex items-center gap-3 px-2 py-2.5 w-full rounded font-sans text-sm transition-all"
+          style={{ color: "rgba(234,225,212,0.35)" }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.color = "rgba(234,225,212,0.7)";
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.color = "rgba(234,225,212,0.35)";
+            (e.currentTarget as HTMLElement).style.background = "transparent";
+          }}
         >
-          <span className="material-symbols-outlined">logout</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>logout</span>
           Cerrar Sesión
         </button>
       </div>

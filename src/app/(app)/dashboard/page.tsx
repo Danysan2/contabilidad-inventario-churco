@@ -32,16 +32,26 @@ function MetricCard({ label, value, change, icon, prefix = "" }: {
 }) {
   const positive = change >= 0;
   return (
-    <div className="bg-surface-container border border-outline-variant rounded-xl p-lg flex flex-col gap-sm animate-fade-in hover:border-primary/30 transition-colors">
+    <div className="card-premium rounded-xl p-lg flex flex-col gap-sm animate-fade-in">
       <div className="flex items-center justify-between">
-        <span className="font-label-caps text-label-caps text-on-surface-variant">{label}</span>
-        <span className="material-symbols-outlined text-primary/60 icon-fill">{icon}</span>
+        <span
+          className="font-sans text-[10px] font-bold uppercase tracking-[0.12em]"
+          style={{ color: "rgba(212,175,55,0.6)" }}
+        >
+          {label}
+        </span>
+        <span
+          className="material-symbols-outlined icon-fill"
+          style={{ color: "var(--gold)", fontSize: 20, opacity: 0.7 }}
+        >
+          {icon}
+        </span>
       </div>
-      <div className="text-3xl font-serif font-bold text-on-surface">
+      <div className="font-display text-3xl font-bold" style={{ color: "#eae1d4" }}>
         {prefix}{typeof value === "number" ? value.toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : value}
       </div>
-      <div className={`flex items-center gap-1 text-sm font-sans ${positive ? "text-green-400" : "text-error"}`}>
-        <span className="material-symbols-outlined text-[16px]">{positive ? "trending_up" : "trending_down"}</span>
+      <div className={`flex items-center gap-1 text-xs font-sans ${positive ? "text-green-400" : "text-red-400"}`}>
+        <span className="material-symbols-outlined icon-xs">{positive ? "trending_up" : "trending_down"}</span>
         <span>{Math.abs(change).toFixed(1)}% vs período anterior</span>
       </div>
     </div>
@@ -51,9 +61,14 @@ function MetricCard({ label, value, change, icon, prefix = "" }: {
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-surface-container-high border border-outline-variant rounded-lg px-3 py-2 shadow-xl">
-        <p className="text-xs text-on-surface-variant font-label-caps">{label}</p>
-        <p className="text-primary font-bold font-sans">${Number(payload[0].value).toLocaleString("es-MX")}</p>
+      <div
+        className="px-3 py-2 rounded-lg shadow-xl"
+        style={{ background: "var(--surface-2)", border: "1px solid rgba(212,175,55,0.2)" }}
+      >
+        <p className="font-sans text-[10px] uppercase tracking-wider" style={{ color: "rgba(212,175,55,0.6)" }}>{label}</p>
+        <p className="font-display font-bold" style={{ color: "var(--gold-light)" }}>
+          ${Number(payload[0].value).toLocaleString("es-MX")}
+        </p>
       </div>
     );
   }
@@ -96,20 +111,26 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl">
         <div>
-          <h2 className="font-serif text-headline-md text-on-surface mb-xs">Dashboard</h2>
-          <p className="text-on-surface-variant font-sans text-sm">Resumen financiero y métricas de la barbería.</p>
+          <h2 className="font-display text-4xl font-bold" style={{ color: "#eae1d4" }}>Dashboard</h2>
+          <p className="font-sans text-sm mt-1" style={{ color: "rgba(234,225,212,0.45)" }}>
+            Resumen financiero y métricas de la barbería.
+          </p>
         </div>
         {/* Period selector */}
-        <div className="flex items-center gap-sm bg-surface-container border border-outline-variant rounded-lg p-1">
+        <div
+          className="flex items-center gap-1 p-1 rounded-lg"
+          style={{ background: "var(--surface-2)", border: "1px solid rgba(212,175,55,0.1)" }}
+        >
           {(["day", "week", "month"] as Period[]).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`px-4 py-2 rounded font-label-caps text-label-caps transition-all ${
+              className="px-4 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider transition-all"
+              style={
                 period === p
-                  ? "bg-primary-container text-on-primary"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
+                  ? { background: "var(--gold)", color: "#1a1200" }
+                  : { color: "rgba(234,225,212,0.45)" }
+              }
             >
               {p === "day" ? "Hoy" : p === "week" ? "Semana" : "Mes"}
             </button>
@@ -135,8 +156,8 @@ export default function DashboardPage() {
           {/* Charts row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-md mb-xl">
             {/* Area chart */}
-            <div className="lg:col-span-2 bg-surface-container border border-outline-variant rounded-xl p-lg">
-              <h3 className="font-serif text-headline-sm text-on-surface mb-lg">Ingresos Diarios</h3>
+            <div className="lg:col-span-2 card-premium rounded-xl p-lg">
+              <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Ingresos Diarios</h3>
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={220}>
                   <AreaChart data={chartData}>
@@ -161,8 +182,8 @@ export default function DashboardPage() {
             </div>
 
             {/* Top products */}
-            <div className="bg-surface-container border border-outline-variant rounded-xl p-lg">
-              <h3 className="font-serif text-headline-sm text-on-surface mb-lg">Más Vendidos</h3>
+            <div className="card-premium rounded-xl p-lg">
+              <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Más Vendidos</h3>
               {data?.topProducts.length ? (
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={data.topProducts} layout="vertical">
@@ -187,7 +208,7 @@ export default function DashboardPage() {
           {/* Low stock & recent sales */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-md">
             {/* Low stock alert */}
-            <div className="bg-surface-container border border-outline-variant rounded-xl p-lg">
+            <div className="card-premium rounded-xl p-lg">
               <div className="flex items-center gap-sm mb-lg">
                 <span className="material-symbols-outlined text-error icon-fill">warning</span>
                 <h3 className="font-serif text-headline-sm text-on-surface">Stock Bajo</h3>
@@ -216,8 +237,8 @@ export default function DashboardPage() {
             </div>
 
             {/* Recent sales */}
-            <div className="bg-surface-container border border-outline-variant rounded-xl p-lg">
-              <h3 className="font-serif text-headline-sm text-on-surface mb-lg">Ventas Recientes</h3>
+            <div className="card-premium rounded-xl p-lg">
+              <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Ventas Recientes</h3>
               {data?.recentSales.length ? (
                 <ul className="flex flex-col gap-sm">
                   {data.recentSales.slice(0, 5).map((s) => (
