@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 type SaleItem = { product: { name: string; image: string | null }; quantity: number; unitPrice: number };
 type Sale = {
@@ -153,8 +155,8 @@ export default function MovementsPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
   const limit = 20;
 
   const isAdmin = session?.user?.role === "ADMIN";
@@ -163,8 +165,8 @@ export default function MovementsPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-      if (dateFrom) params.set("from", dateFrom);
-      if (dateTo) params.set("to", dateTo);
+      if (dateFrom) params.set("from", dateFrom.toISOString());
+      if (dateTo) params.set("to", dateTo.toISOString());
       const res = await fetch(`/api/sales?${params}`);
       if (res.ok) {
         const data = await res.json();
@@ -214,34 +216,32 @@ export default function MovementsPage() {
       </div>
 
       {/* Date filters */}
-      <div className="flex flex-col sm:flex-row gap-sm mb-lg">
-        {[
-          { label: "Desde", value: dateFrom, onChange: (v: string) => { setDateFrom(v); setPage(1); } },
-          { label: "Hasta", value: dateTo, onChange: (v: string) => { setDateTo(v); setPage(1); } },
-        ].map(({ label, value, onChange }) => (
+      <div className="flex flex-col sm:flex-row gap-sm mb-lg items-end">
+        {([
+          { label: "Desde", value: dateFrom, onChange: (d: Date | null) => { setDateFrom(d); setPage(1); }, maxDate: dateTo ?? undefined },
+          { label: "Hasta", value: dateTo, onChange: (d: Date | null) => { setDateTo(d); setPage(1); }, minDate: dateFrom ?? undefined },
+        ] as const).map(({ label, value, onChange, ...rest }) => (
           <div key={label} className="flex flex-col gap-1">
             <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
               {label}
             </label>
-            <input
-              type="date"
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              className="px-4 py-2 rounded font-sans text-sm outline-none transition-colors"
-              style={{
-                background: "var(--surface-2)",
-                border: "1px solid rgba(212,175,55,0.1)",
-                color: "#eae1d4",
-              }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(212,175,55,0.35)")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(212,175,55,0.1)")}
+            <DatePicker
+              selected={value}
+              onChange={onChange}
+              dateFormat="dd/MM/yyyy"
+              placeholderText="dd/mm/aaaa"
+              locale="es"
+              isClearable
+              showPopperArrow={false}
+              {...rest}
+              className="px-4 py-2 rounded font-sans text-sm outline-none transition-colors datepicker-gold"
             />
           </div>
         ))}
         {(dateFrom || dateTo) && (
           <div className="flex items-end">
             <button
-              onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
+              onClick={() => { setDateFrom(null); setDateTo(null); setPage(1); }}
               className="px-4 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
               style={{
                 color: "rgba(234,225,212,0.45)",

@@ -9,7 +9,7 @@ type PurchaseItem = { product: { id: string; name: string; sku: string }; quanti
 type Purchase = { id: string; date: string; note: string | null; items: PurchaseItem[] };
 type FixedExpense = { id: string; name: string; amount: number; categorySlug: string | null; description: string | null; active: boolean };
 
-type DraftItem = { productId: string; quantity: number; unitCost: number };
+type DraftItem = { productId: string; quantity: string; unitCost: string };
 
 function PurchaseModal({ products, onSave, onClose }: {
   products: Product[];
@@ -17,19 +17,29 @@ function PurchaseModal({ products, onSave, onClose }: {
   onClose: () => void;
 }) {
   const [note, setNote] = useState("");
-  const [items, setItems] = useState<DraftItem[]>([{ productId: "", quantity: 1, unitCost: 0 }]);
+  const [items, setItems] = useState<DraftItem[]>([{ productId: "", quantity: "", unitCost: "" }]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const addRow = () => setItems((prev) => [...prev, { productId: "", quantity: 1, unitCost: 0 }]);
+  const addRow = () => setItems((prev) => [...prev, { productId: "", quantity: "", unitCost: "" }]);
   const removeRow = (i: number) => setItems((prev) => prev.filter((_, idx) => idx !== i));
-  const updateRow = (i: number, field: keyof DraftItem, value: string | number) =>
+  const updateRow = (i: number, field: keyof DraftItem, value: string) =>
     setItems((prev) => prev.map((row, idx) => idx === i ? { ...row, [field]: value } : row));
 
-  const total = items.reduce((s, i) => s + i.quantity * i.unitCost, 0);
+  const parseRow = (row: DraftItem) => ({
+    productId: row.productId,
+    quantity: parseInt(row.quantity) || 0,
+    unitCost: parseFloat(row.unitCost) || 0,
+  });
+
+  const total = items.reduce((s, i) => {
+    const qty = parseInt(i.quantity) || 0;
+    const cost = parseFloat(i.unitCost) || 0;
+    return s + qty * cost;
+  }, 0);
 
   async function handleSave() {
-    const valid = items.filter((i) => i.productId && i.quantity > 0 && i.unitCost > 0);
+    const valid = items.map(parseRow).filter((i) => i.productId && i.quantity > 0 && i.unitCost > 0);
     if (!valid.length) { setError("Agrega al menos un producto con cantidad y costo."); return; }
     setSaving(true); setError("");
     try {
@@ -79,25 +89,39 @@ function PurchaseModal({ products, onSave, onClose }: {
                     onChange={(e) => {
                       const prod = products.find((p) => p.id === e.target.value);
                       updateRow(i, "productId", e.target.value);
-                      if (prod?.costPrice) updateRow(i, "unitCost", Number(prod.costPrice));
+                      if (prod?.costPrice) updateRow(i, "unitCost", String(prod.costPrice));
                     }}
                     className="input-premium"
-                    style={{ paddingLeft: 0 }}
+                    style={{
+                      background: "var(--surface-2)",
+                      color: row.productId ? "#eae1d4" : "rgba(234,225,212,0.4)",
+                      colorScheme: "dark",
+                    }}
                   >
-                    <option value="">— Selecciona producto —</option>
+                    <option value="" style={{ background: "#1a1610", color: "rgba(234,225,212,0.4)" }}>— Selecciona producto —</option>
                     {products.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                      <option key={p.id} value={p.id} style={{ background: "#1a1610", color: "#eae1d4" }}>{p.name} ({p.sku})</option>
                     ))}
                   </select>
-                  <input type="number" min={1} value={row.quantity}
-                    onChange={(e) => updateRow(i, "quantity", parseInt(e.target.value) || 1)}
-                    className="input-premium text-right" />
-                  <input type="number" min={0} step={100} value={row.unitCost}
-                    onChange={(e) => updateRow(i, "unitCost", parseFloat(e.target.value) || 0)}
-                    placeholder="0"
-                    className="input-premium text-right" />
+                  <input
+                    type="number"
+                    min={1}
+                    value={row.quantity}
+                    onChange={(e) => updateRow(i, "quantity", e.target.value)}
+                    placeholder="Cant."
+                    className="input-premium text-right"
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={row.unitCost}
+                    onChange={(e) => updateRow(i, "unitCost", e.target.value)}
+                    placeholder="$ costo"
+                    className="input-premium text-right"
+                  />
                   <div className="font-display font-bold text-right" style={{ color: "var(--gold-light)" }}>
-                    ${(row.quantity * row.unitCost).toLocaleString("es-CO")}
+                    ${((parseInt(row.quantity) || 0) * (parseFloat(row.unitCost) || 0)).toLocaleString("es-CO")}
                   </div>
                   <button onClick={() => removeRow(i)} disabled={items.length === 1}
                     className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-20"
@@ -150,7 +174,7 @@ function FixedExpenseModal({ expense, onSave, onClose }: {
   onClose: () => void;
 }) {
   const [name, setName] = useState(expense?.name ?? "");
-  const [amount, setAmount] = useState(expense?.amount ?? 0);
+  const [amount, setAmount] = useState(expense?.amount ? String(expense.amount) : "");
   const [categorySlug, setCategorySlug] = useState(expense?.categorySlug ?? "");
   const [description, setDescription] = useState(expense?.description ?? "");
   const [saving, setSaving] = useState(false);
@@ -162,7 +186,7 @@ function FixedExpenseModal({ expense, onSave, onClose }: {
     try {
       const url = expense?.id ? `/api/gastos-fijos/${expense.id}` : "/api/gastos-fijos";
       const method = expense?.id ? "PUT" : "POST";
-      await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, amount, categorySlug, description }) });
+      await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, amount: parseFloat(amount) || 0, categorySlug, description }) });
       onSave(); onClose();
     } finally { setSaving(false); }
   }
@@ -181,16 +205,21 @@ function FixedExpenseModal({ expense, onSave, onClose }: {
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>Monto mensual (COP) *</label>
-            <input type="number" min={0} step={1000} value={amount} onChange={(e) => setAmount(parseFloat(e.target.value) || 0)} className="input-premium" />
+            <input type="number" min={0} step={1000} value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Ej: 80000" className="input-premium" />
           </div>
           <div className="flex flex-col gap-1">
             <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>Categoría relacionada</label>
-            <select value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)} className="input-premium" style={{ paddingLeft: 0 }}>
-              <option value="">— General —</option>
-              <option value="bebidas">Bebidas (Refrescos)</option>
-              <option value="snacks">Snacks (Comida)</option>
-              <option value="cabello">Cabello</option>
-              <option value="cuidado-barba">Cuidado de Barba</option>
+            <select
+              value={categorySlug}
+              onChange={(e) => setCategorySlug(e.target.value)}
+              className="input-premium"
+              style={{ background: "var(--surface-2)", color: "#eae1d4", colorScheme: "dark" }}
+            >
+              <option value="" style={{ background: "#1a1610", color: "#eae1d4" }}>— General —</option>
+              <option value="bebidas" style={{ background: "#1a1610", color: "#eae1d4" }}>Bebidas (Refrescos)</option>
+              <option value="snacks" style={{ background: "#1a1610", color: "#eae1d4" }}>Snacks (Comida)</option>
+              <option value="cabello" style={{ background: "#1a1610", color: "#eae1d4" }}>Cabello</option>
+              <option value="cuidado-barba" style={{ background: "#1a1610", color: "#eae1d4" }}>Cuidado de Barba</option>
             </select>
           </div>
           <div className="flex flex-col gap-1">
@@ -203,7 +232,7 @@ function FixedExpenseModal({ expense, onSave, onClose }: {
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(212,175,55,0.1)", color: "rgba(234,225,212,0.5)" }}>
             Cancelar
           </button>
-          <button onClick={handleSave} disabled={saving || !name || !amount}
+          <button onClick={handleSave} disabled={saving || !name || !(parseFloat(amount) > 0)}
             className="btn-gold flex-1 py-2.5 rounded flex items-center justify-center gap-2 disabled:opacity-50">
             {saving ? <span className="material-symbols-outlined icon-sm animate-spin">progress_activity</span>
               : <span className="material-symbols-outlined icon-sm">save</span>}
