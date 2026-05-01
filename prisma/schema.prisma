@@ -43,6 +43,7 @@ model Product {
   name           String
   sku            String          @unique
   price          Decimal         @db.Decimal(10, 2)
+  costPrice      Decimal?        @db.Decimal(10, 2)
   stock          Int             @default(0)
   minStock       Int             @default(5)
   image          String?
@@ -53,6 +54,7 @@ model Product {
   updatedAt      DateTime        @updatedAt
   saleItems      SaleItem[]
   stockMovements StockMovement[]
+  purchaseItems  PurchaseItem[]
 
   @@index([categoryId])
   @@index([active])
@@ -81,6 +83,39 @@ model SaleItem {
   sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
   productId String
   product   Product @relation(fields: [productId], references: [id])
+}
+
+model Purchase {
+  id        String         @id @default(cuid())
+  date      DateTime       @default(now())
+  note      String?
+  createdAt DateTime       @default(now())
+  items     PurchaseItem[]
+
+  @@index([date])
+}
+
+model PurchaseItem {
+  id         String   @id @default(cuid())
+  purchaseId String
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int
+  unitCost   Decimal  @db.Decimal(10, 2)
+
+  @@index([purchaseId])
+  @@index([productId])
+}
+
+model FixedExpense {
+  id           String   @id @default(cuid())
+  name         String
+  amount       Decimal  @db.Decimal(10, 2)
+  categorySlug String?
+  description  String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
 }
 
 model StockMovement {
