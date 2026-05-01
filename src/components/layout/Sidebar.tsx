@@ -52,7 +52,7 @@ export default function Sidebar() {
           className="font-display text-xl font-bold italic"
           style={{ color: "var(--gold-light)" }}
         >
-          Groom &amp; Gold
+          ContaChurco
         </span>
       </div>
 

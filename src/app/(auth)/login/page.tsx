@@ -88,9 +88,9 @@ export default function LoginPage() {
             className="font-display text-6xl font-bold italic leading-none mb-3"
             style={{ color: "var(--gold-light)" }}
           >
-            Groom
+            Conta
             <br />
-            <span className="text-gold-gradient">&amp; Gold</span>
+            <span className="text-gold-gradient">Churco</span>
           </h1>
 
           <div className="divider-gold my-6 w-24" />
@@ -137,7 +137,7 @@ export default function LoginPage() {
                 content_cut
               </span>
             </div>
-            <h1 className="font-display text-4xl font-bold italic text-gold-gradient">Groom &amp; Gold</h1>
+            <h1 className="font-display text-4xl font-bold italic text-gold-gradient">ContaChurco</h1>
           </div>
 
           {/* Heading */}

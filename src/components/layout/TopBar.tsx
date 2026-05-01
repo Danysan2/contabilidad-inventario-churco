@@ -61,7 +61,7 @@ export default function TopBar() {
               </span>
             </div>
             <h1 className="font-display text-xl font-bold italic text-gold-gradient">
-              Groom &amp; Gold
+              ContaChurco
             </h1>
           </Link>
         </div>

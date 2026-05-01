@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Groom & Gold — Sistema de Gestión",
-  description: "Sistema de ventas e inventario para Barbería Groom & Gold",
+  title: "ContaChurco — Sistema de Gestión",
+  description: "Sistema de ventas e inventario para ContaChurco",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
