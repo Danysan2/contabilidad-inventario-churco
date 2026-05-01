@@ -50,7 +50,7 @@ async function main() {
     { sku: "HR-003",  name: "Crema Churcos Rolda",   price: 15000, stock: 10, minStock: 3,  image: "/imagenes/Crema CHURCOS Rolda.webp",    categoryId: cabello.id },
     { sku: "HR-004",  name: "Crema White Rolda",     price: 15000, stock: 10, minStock: 3,  image: "/imagenes/Crema white Rolda.png",       categoryId: cabello.id },
     { sku: "HR-005",  name: "Gel Black Rolda",       price: 12000, stock: 12, minStock: 4,  image: "/imagenes/Gel black Rolda.jpg",         categoryId: cabello.id },
-    { sku: "HR-006",  name: "Minoxidil 5%",          price: 35000, stock: 6,  minStock: 2,  image: "/imagenes/Minoxidil 5%.png",            categoryId: cabello.id },
+    { sku: "HR-006",  name: "Minoxidil 5%",          price: 35000, stock: 6,  minStock: 2,  image: "/imagenes/minoxidil_2.webp",             categoryId: cabello.id },
 
     // ── Cuidado de Barba ─────────────────────────────────────────────────────
     { sku: "BRD-001", name: "Mascarilla Black Mask", price: 25000, stock: 8,  minStock: 2,  image: "/imagenes/Mascarilla Black Mask.avif",  categoryId: barba.id  },

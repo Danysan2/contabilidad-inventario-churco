@@ -49,6 +49,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await prisma.product.update({ where: { id: params.id }, data: { active: false } });
+  await prisma.$transaction(async (tx) => {
+    await tx.stockMovement.deleteMany({ where: { productId: params.id } });
+    await tx.saleItem.deleteMany({ where: { productId: params.id } });
+    await tx.product.delete({ where: { id: params.id } });
+  });
+
   return NextResponse.json({ success: true });
 }

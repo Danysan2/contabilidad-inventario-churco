@@ -446,7 +446,7 @@ export default function InventoryPage() {
               <h3 className="font-serif text-headline-sm text-on-surface">¿Eliminar producto?</h3>
             </div>
             <p className="text-on-surface-variant font-sans text-sm mb-lg">
-              El producto será desactivado. Las ventas históricas no se verán afectadas.
+              El producto será eliminado permanentemente. Esta acción no se puede deshacer.
             </p>
             <div className="flex gap-sm">
               <button onClick={() => setDeleteId(null)}
