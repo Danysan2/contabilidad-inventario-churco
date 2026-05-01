@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { appendSaleToSheet } from "@/lib/sheets";
+import { saleSchema, isValidDate } from "@/lib/validation";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -11,8 +12,13 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const from = searchParams.get("from");
   const to = searchParams.get("to");
-  const limit = parseInt(searchParams.get("limit") ?? "50");
-  const page = parseInt(searchParams.get("page") ?? "1");
+  const rawLimit = parseInt(searchParams.get("limit") ?? "50");
+  const rawPage = parseInt(searchParams.get("page") ?? "1");
+  const limit = isNaN(rawLimit) || rawLimit < 1 ? 50 : Math.min(rawLimit, 200);
+  const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+
+  if (from && !isValidDate(from)) return NextResponse.json({ error: "Fecha 'from' inválida" }, { status: 400 });
+  if (to && !isValidDate(to)) return NextResponse.json({ error: "Fecha 'to' inválida" }, { status: 400 });
 
   const where = {
     ...(session.user.role === "EMPLOYEE" && { employeeId: session.user.id }),
@@ -48,12 +54,11 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { items, note } = body as {
-    items: { productId: string; quantity: number; unitPrice: number }[];
-    note?: string;
-  };
-
-  if (!items?.length) return NextResponse.json({ error: "No hay items" }, { status: 400 });
+  const parsed = saleSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Datos inválidos", details: parsed.error.flatten() }, { status: 400 });
+  }
+  const { items, note } = parsed.data;
 
   const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
 

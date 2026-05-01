@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { purchaseSchema } from "@/lib/validation";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -37,14 +38,11 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { note, items } = body as {
-    note?: string;
-    items: { productId: string; quantity: number; unitCost: number }[];
-  };
-
-  if (!items?.length) {
-    return NextResponse.json({ error: "Se requiere al menos un producto" }, { status: 400 });
+  const parsed = purchaseSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Datos inválidos", details: parsed.error.flatten() }, { status: 400 });
   }
+  const { note, items } = parsed.data;
 
   const purchase = await prisma.$transaction(async (tx) => {
     const created = await tx.purchase.create({

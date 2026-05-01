@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { syncProductsToSheet } from "@/lib/sheets";
+import { productSchema } from "@/lib/validation";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -33,11 +34,11 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { name, sku, price, stock, minStock, image, categoryId } = body;
-
-  if (!name || !sku || !price || !categoryId) {
-    return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 });
+  const parsed = productSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Datos inválidos", details: parsed.error.flatten() }, { status: 400 });
   }
+  const { name, sku, price, stock, minStock, image, categoryId } = parsed.data;
 
   const product = await prisma.product.create({
     data: { name, sku, price, stock: stock ?? 0, minStock: minStock ?? 5, image, categoryId },
