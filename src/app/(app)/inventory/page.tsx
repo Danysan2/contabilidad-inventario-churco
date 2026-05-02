@@ -32,6 +32,14 @@ function ProductModal({ product, categories, onSave, onClose }: {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setForm((f) => ({ ...f, image: reader.result as string }));
+    reader.readAsDataURL(file);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -89,8 +97,11 @@ function ProductModal({ product, categories, onSave, onClose }: {
                 value={form.categoryId}
                 onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
                 className="input-premium"
+                style={{ background: "var(--surface-2)", color: "#eae1d4", colorScheme: "dark" }}
               >
-                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id} style={{ background: "#1a1610", color: "#eae1d4" }}>{c.name}</option>
+                ))}
               </select>
             </div>
             {[
@@ -115,15 +126,34 @@ function ProductModal({ product, categories, onSave, onClose }: {
             ))}
             <div className="flex flex-col gap-2 md:col-span-2">
               <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
-                URL de imagen
+                Imagen del producto
               </label>
-              <input
-                type="url"
-                value={form.image}
-                onChange={(e) => setForm({ ...form, image: e.target.value })}
-                placeholder="https://…"
-                className="input-premium"
-              />
+              <div className="flex items-center gap-sm">
+                <label
+                  className="cursor-pointer flex items-center gap-2 px-4 py-2.5 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
+                  style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", color: "rgba(212,175,55,0.8)" }}
+                >
+                  <span className="material-symbols-outlined icon-sm">upload</span>
+                  Elegir imagen
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                </label>
+                {form.image && (
+                  <>
+                    <Image src={form.image} alt="preview" width={48} height={48} className="w-12 h-12 object-cover rounded" />
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, image: "" })}
+                      className="w-7 h-7 flex items-center justify-center rounded transition-colors"
+                      style={{ color: "rgba(234,225,212,0.4)" }}
+                    >
+                      <span className="material-symbols-outlined icon-sm">close</span>
+                    </button>
+                  </>
+                )}
+                {!form.image && (
+                  <span className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.3)" }}>Sin imagen</span>
+                )}
+              </div>
             </div>
             {!isNew && (
               <div className="flex items-center gap-sm md:col-span-2">

@@ -24,7 +24,7 @@ export default function Sidebar() {
 
   return (
     <nav
-      className="w-64 hidden md:flex flex-col h-screen sticky top-0"
+      className="w-64 hidden md:flex flex-col h-full overflow-y-auto"
       style={{
         background: "linear-gradient(180deg, var(--surface-1) 0%, var(--surface-0) 100%)",
         borderRight: "1px solid rgba(212,175,55,0.08)",

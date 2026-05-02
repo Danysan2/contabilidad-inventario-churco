@@ -12,9 +12,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!session) redirect("/login");
 
   return (
-    <div className="dark bg-background text-on-background min-h-screen flex flex-col font-sans antialiased">
+    <div className="dark bg-background text-on-background h-screen flex flex-col font-sans antialiased overflow-hidden">
       <TopBar />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0">
         <Sidebar />
         <main className="flex-1 overflow-y-auto p-container-margin md:p-xl pb-32 md:pb-xl">
           {children}
