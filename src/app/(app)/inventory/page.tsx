@@ -5,6 +5,11 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+function resolveImage(src: string): string {
+  if (src.startsWith("data:") || src.startsWith("http") || src.startsWith("/")) return src;
+  return `/imagenes/${encodeURIComponent(src)}`;
+}
+
 type Category = { id: string; name: string; slug: string };
 type Product = {
   id: string; name: string; sku: string; price: number; stock: number;
@@ -379,7 +384,7 @@ export default function InventoryPage() {
                 {/* Desktop image */}
                 <div className={`w-16 h-16 rounded bg-surface-container-high overflow-hidden shrink-0 hidden md:block ${lowStock ? "ml-2" : ""}`}>
                   {product.image ? (
-                    <Image src={product.image} alt={product.name} width={64} height={64} className="w-full h-full object-cover" />
+                    <Image src={resolveImage(product.image)} alt={product.name} width={64} height={64} className="w-full h-full object-cover" unoptimized={!product.image.startsWith("http")} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="material-symbols-outlined text-outline text-[28px]">inventory_2</span>

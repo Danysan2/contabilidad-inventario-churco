@@ -26,7 +26,7 @@ export default function LoginPage() {
       setError("Credenciales incorrectas. Verifica tu email y contraseña.");
       setLoading(false);
     } else {
-      router.push("/pos");
+      router.push("/");
     }
   }
 
