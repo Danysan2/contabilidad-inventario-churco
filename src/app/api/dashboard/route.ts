@@ -44,13 +44,21 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
-    prisma.$queryRaw<{ date: string; total: number }[]>`
-      SELECT DATE("createdAt") as date, SUM(total) as total
-      FROM "Sale"
-      WHERE "createdAt" >= ${from}
-      GROUP BY DATE("createdAt")
-      ORDER BY date ASC
-    `,
+    period === "day"
+      ? prisma.$queryRaw<{ date: string; total: number }[]>`
+          SELECT DATE_TRUNC('hour', "createdAt") as date, SUM(total) as total
+          FROM "Sale"
+          WHERE "createdAt" >= ${from}
+          GROUP BY DATE_TRUNC('hour', "createdAt")
+          ORDER BY date ASC
+        `
+      : prisma.$queryRaw<{ date: string; total: number }[]>`
+          SELECT DATE("createdAt") as date, SUM(total) as total
+          FROM "Sale"
+          WHERE "createdAt" >= ${from}
+          GROUP BY DATE("createdAt")
+          ORDER BY date ASC
+        `,
     // For margin calculation: sale items with product cost price
     prisma.saleItem.findMany({
       where: { sale: { createdAt: { gte: from } } },
@@ -97,13 +105,16 @@ export async function GET(req: NextRequest) {
   const netMargin = grossMargin - proratedFixed;
   const netMarginPct = currentTotal > 0 ? (netMargin / currentTotal) * 100 : 0;
 
-  // Group categories: bebidas→Refrescos, snacks→Comida, cabello+cuidado-barba→Belleza, rest→Otros
+  // Group categories by slug
   const categoryGroupMap: Record<string, string> = {
-    bebidas: "Refrescos",
+    bebidas: "Bebidas",
+    belleza: "Belleza",
+    comida: "Comida",
+    // legacy slugs (before migration)
     snacks: "Comida",
     cabello: "Belleza",
     "cuidado-barba": "Belleza",
-    paquetes: "Servicios",
+    paquetes: "Comida",
   };
   const groupedRevenue: Record<string, number> = {};
   for (const row of categoryRevenue) {

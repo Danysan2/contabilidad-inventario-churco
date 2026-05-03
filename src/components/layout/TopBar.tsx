@@ -46,7 +46,7 @@ export default function TopBar() {
             <span className="material-symbols-outlined" style={{ fontSize: 24 }}>menu</span>
           </button>
 
-          <Link href="/pos" className="flex items-center gap-3 md:hidden">
+          <Link href="/pos" className="flex items-center gap-3">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
               style={{

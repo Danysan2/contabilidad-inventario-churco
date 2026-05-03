@@ -3,6 +3,11 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 
+function resolveImage(src: string): string {
+  if (src.startsWith("data:") || src.startsWith("http") || src.startsWith("/")) return src;
+  return `/imagenes/${encodeURIComponent(src)}`;
+}
+
 type Category = { id: string; name: string; slug: string };
 type Product = {
   id: string; name: string; sku: string; price: number; stock: number;
@@ -25,11 +30,12 @@ function ProductCard({ product, quantity, onAdd, onRemove }: {
       <div className="aspect-square relative bg-[#121212] p-3 flex items-center justify-center">
         {product.image ? (
           <Image
-            src={product.image}
+            src={resolveImage(product.image)}
             alt={product.name}
             fill
             className="object-contain mix-blend-screen p-3"
             sizes="(max-width: 768px) 50vw, 25vw"
+            unoptimized={product.image.startsWith("data:")}
           />
         ) : (
           <span className="material-symbols-outlined text-[48px] text-[#2A2A2A]">inventory_2</span>
@@ -86,7 +92,7 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading }: {
   const [note, setNote] = useState("");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 pb-24 md:pb-4">
       <div
         className="card-premium rounded-xl w-full max-w-md animate-slide-up shadow-2xl"
       >

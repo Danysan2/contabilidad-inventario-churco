@@ -61,7 +61,7 @@ function PurchaseModal({ products, onSave, onClose }: {
   const labelStyle = { color: "rgba(212,175,55,0.6)" };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 pb-24 md:pb-4">
       <div className="card-premium rounded-xl w-full max-w-2xl animate-slide-up shadow-2xl max-h-[90vh] flex flex-col">
         <div className="p-lg flex items-center justify-between" style={{ borderBottom: "1px solid rgba(212,175,55,0.1)" }}>
           <h3 className="font-display text-xl font-semibold" style={{ color: "#eae1d4" }}>Registrar Compra</h3>
@@ -216,10 +216,9 @@ function FixedExpenseModal({ expense, onSave, onClose }: {
               style={{ background: "var(--surface-2)", color: "#eae1d4", colorScheme: "dark" }}
             >
               <option value="" style={{ background: "#1a1610", color: "#eae1d4" }}>— General —</option>
-              <option value="bebidas" style={{ background: "#1a1610", color: "#eae1d4" }}>Bebidas (Refrescos)</option>
-              <option value="snacks" style={{ background: "#1a1610", color: "#eae1d4" }}>Snacks (Comida)</option>
-              <option value="cabello" style={{ background: "#1a1610", color: "#eae1d4" }}>Cabello</option>
-              <option value="cuidado-barba" style={{ background: "#1a1610", color: "#eae1d4" }}>Cuidado de Barba</option>
+              <option value="bebidas" style={{ background: "#1a1610", color: "#eae1d4" }}>Bebidas</option>
+              <option value="belleza" style={{ background: "#1a1610", color: "#eae1d4" }}>Belleza</option>
+              <option value="comida" style={{ background: "#1a1610", color: "#eae1d4" }}>Comida</option>
             </select>
           </div>
           <div className="flex flex-col gap-1">

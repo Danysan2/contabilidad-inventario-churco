@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 const navItems = [
-  { href: "/pos", label: "POS", icon: "shopping_basket", adminOnly: false },
-  { href: "/catalogo", label: "Catálogo", icon: "photo_library", adminOnly: false },
-  { href: "/ranking", label: "Ranking", icon: "military_tech", adminOnly: false },
-  { href: "/movements", label: "Historial", icon: "receipt_long", adminOnly: false },
-  { href: "/inventory", label: "Stock", icon: "inventory", adminOnly: true },
-  { href: "/dashboard", label: "Dashboard", icon: "dashboard", adminOnly: true },
-  { href: "/egresos", label: "Egresos", icon: "trending_down", adminOnly: true },
+  { href: "/pos",       label: "Ventas",    icon: "shopping_basket", adminOnly: false },
+  { href: "/catalogo",  label: "Catálogo",  icon: "photo_library",   adminOnly: false },
+  { href: "/ranking",   label: "Ranking",   icon: "military_tech",   adminOnly: false },
+  { href: "/dashboard", label: "Dashboard", icon: "dashboard",       adminOnly: true  },
+  { href: "/movements", label: "Historial", icon: "receipt_long",    adminOnly: false },
+  { href: "/inventory", label: "Stock",     icon: "inventory",       adminOnly: true  },
+  { href: "/egresos",   label: "Egresos",   icon: "trending_down",   adminOnly: true  },
 ];
 
 export default function BottomNav() {

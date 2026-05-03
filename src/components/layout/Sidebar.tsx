@@ -30,33 +30,6 @@ export default function Sidebar() {
         borderRight: "1px solid rgba(212,175,55,0.08)",
       }}
     >
-      {/* Brand */}
-      <div
-        className="px-6 py-5 flex items-center gap-3"
-        style={{ borderBottom: "1px solid rgba(212,175,55,0.08)" }}
-      >
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-          style={{
-            background: "rgba(212,175,55,0.1)",
-            border: "1px solid rgba(212,175,55,0.2)",
-          }}
-        >
-          <span
-            className="material-symbols-outlined icon-fill"
-            style={{ color: "var(--gold)", fontSize: 18 }}
-          >
-            content_cut
-          </span>
-        </div>
-        <span
-          className="font-display text-xl font-bold italic"
-          style={{ color: "var(--gold-light)" }}
-        >
-          ContaChurco
-        </span>
-      </div>
-
       {/* User info */}
       <div
         className="px-5 py-4 flex items-center gap-3"

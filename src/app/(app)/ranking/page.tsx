@@ -29,6 +29,11 @@ const MONTH_NAMES = [
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
 
+function resolveImage(src: string): string {
+  if (src.startsWith("data:") || src.startsWith("http") || src.startsWith("/")) return src;
+  return `/imagenes/${encodeURIComponent(src)}`;
+}
+
 export default function RankingPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -142,7 +147,7 @@ export default function RankingPage() {
                   <div className="w-20 h-20 rounded-xl bg-surface-container-high overflow-hidden border border-outline-variant shrink-0">
                     {item.product.image ? (
                       <Image
-                        src={item.product.image.startsWith("http") ? item.product.image : `/imagenes/${encodeURIComponent(item.product.image)}`}
+                        src={resolveImage(item.product.image)}
                         alt={item.product.name}
                         width={80}
                         height={80}
@@ -192,7 +197,7 @@ export default function RankingPage() {
                     <div className="hidden md:block w-12 h-12 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
                       {item.product.image ? (
                         <Image
-                          src={item.product.image.startsWith("http") ? item.product.image : `/imagenes/${encodeURIComponent(item.product.image)}`}
+                          src={resolveImage(item.product.image)}
                           alt={item.product.name}
                           width={48}
                           height={48}
@@ -212,7 +217,7 @@ export default function RankingPage() {
                       <div className="w-10 h-10 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
                         {item.product.image ? (
                           <Image
-                            src={item.product.image.startsWith("http") ? item.product.image : `/imagenes/${encodeURIComponent(item.product.image)}`}
+                            src={resolveImage(item.product.image)}
                             alt={item.product.name}
                             width={40}
                             height={40}

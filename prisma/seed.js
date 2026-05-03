@@ -4,14 +4,24 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
-  const categories = await Promise.all([
-    prisma.category.upsert({ where: { slug: "bebidas"       }, update: {}, create: { name: "Bebidas",          slug: "bebidas"       } }),
-    prisma.category.upsert({ where: { slug: "snacks"        }, update: {}, create: { name: "Snacks",           slug: "snacks"        } }),
-    prisma.category.upsert({ where: { slug: "paquetes"      }, update: {}, create: { name: "Paquetes",         slug: "paquetes"      } }),
-    prisma.category.upsert({ where: { slug: "cuidado-barba" }, update: {}, create: { name: "Cuidado de Barba", slug: "cuidado-barba" } }),
-    prisma.category.upsert({ where: { slug: "cabello"       }, update: {}, create: { name: "Cabello",          slug: "cabello"       } }),
+  // ── Categories ──────────────────────────────────────────────────────────────
+  const [bebidas, belleza, comida] = await Promise.all([
+    prisma.category.upsert({ where: { slug: "bebidas" }, update: { name: "Bebidas" }, create: { name: "Bebidas", slug: "bebidas" } }),
+    prisma.category.upsert({ where: { slug: "belleza" }, update: { name: "Belleza" }, create: { name: "Belleza", slug: "belleza" } }),
+    prisma.category.upsert({ where: { slug: "comida"  }, update: { name: "Comida"  }, create: { name: "Comida",  slug: "comida"  } }),
   ]);
-  const [bebidas, snacks, paquetes, barba, cabello] = categories;
+
+  // ── Migrate existing products from old categories ───────────────────────────
+  const [oldSnacks, oldPaquetes, oldCabello, oldBarba] = await Promise.all([
+    prisma.category.findUnique({ where: { slug: "snacks"        } }),
+    prisma.category.findUnique({ where: { slug: "paquetes"      } }),
+    prisma.category.findUnique({ where: { slug: "cabello"       } }),
+    prisma.category.findUnique({ where: { slug: "cuidado-barba" } }),
+  ]);
+  if (oldSnacks)   await prisma.product.updateMany({ where: { categoryId: oldSnacks.id   }, data: { categoryId: comida.id  } });
+  if (oldPaquetes) await prisma.product.updateMany({ where: { categoryId: oldPaquetes.id }, data: { categoryId: comida.id  } });
+  if (oldCabello)  await prisma.product.updateMany({ where: { categoryId: oldCabello.id  }, data: { categoryId: belleza.id } });
+  if (oldBarba)    await prisma.product.updateMany({ where: { categoryId: oldBarba.id    }, data: { categoryId: belleza.id } });
 
   const products = [
     // ── Bebidas ──────────────────────────────────────────────────────────────
@@ -32,59 +42,50 @@ async function main() {
     { sku: "BEV-015", name: "Quatro",                price: 2500,  stock: 24, minStock: 8,  image: "/imagenes/Quatro.avif",                 categoryId: bebidas.id },
     { sku: "BEV-016", name: "Ginger Beer",           price: 5000,  stock: 12, minStock: 4,  image: "/imagenes/Ginger.jpg",                  categoryId: bebidas.id },
 
-    // ── Snacks ───────────────────────────────────────────────────────────────
-    { sku: "SNK-001", name: "Papa Margarita",        price: 2500,  stock: 30, minStock: 8,  image: "/imagenes/papa-margarita.jpg",          categoryId: snacks.id },
-    { sku: "SNK-002", name: "Doritos",               price: 2500,  stock: 30, minStock: 8,  image: "/imagenes/doritos.webp",                categoryId: snacks.id },
-    { sku: "SNK-003", name: "Cheetos",               price: 2500,  stock: 30, minStock: 8,  image: "/imagenes/cheetos.png",                 categoryId: snacks.id },
-    { sku: "SNK-004", name: "Cheetos Boliqueso",     price: 2500,  stock: 24, minStock: 8,  image: "/imagenes/cheetos Boliqueso.webp",      categoryId: snacks.id },
-    { sku: "SNK-005", name: "Choclitos",             price: 2000,  stock: 30, minStock: 8,  image: "/imagenes/Choclitos.png",               categoryId: snacks.id },
-    { sku: "SNK-006", name: "Chestris",              price: 2000,  stock: 24, minStock: 8,  image: "/imagenes/Chestris.webp",               categoryId: snacks.id },
-    { sku: "SNK-007", name: "Detodito",              price: 2000,  stock: 24, minStock: 8,  image: "/imagenes/detodito.webp",               categoryId: snacks.id },
-    { sku: "SNK-008", name: "NatuChips",             price: 2000,  stock: 20, minStock: 6,  image: "/imagenes/NatuChips.webp",              categoryId: snacks.id },
-    { sku: "SNK-009", name: "Galletas",              price: 1500,  stock: 24, minStock: 8,  image: "/imagenes/Galletas.png",                categoryId: snacks.id },
-    { sku: "SNK-010", name: "Maní",                  price: 1500,  stock: 20, minStock: 6,  image: "/imagenes/Maní.png",                    categoryId: snacks.id },
+    // ── Comida ───────────────────────────────────────────────────────────────
+    { sku: "SNK-001", name: "Papa Margarita",        price: 2500,  stock: 30, minStock: 8,  image: "/imagenes/papa-margarita.jpg",          categoryId: comida.id },
+    { sku: "SNK-002", name: "Doritos",               price: 2500,  stock: 30, minStock: 8,  image: "/imagenes/doritos.webp",                categoryId: comida.id },
+    { sku: "SNK-003", name: "Cheetos",               price: 2500,  stock: 30, minStock: 8,  image: "/imagenes/cheetos.png",                 categoryId: comida.id },
+    { sku: "SNK-004", name: "Cheetos Boliqueso",     price: 2500,  stock: 24, minStock: 8,  image: "/imagenes/cheetos Boliqueso.webp",      categoryId: comida.id },
+    { sku: "SNK-005", name: "Choclitos",             price: 2000,  stock: 30, minStock: 8,  image: "/imagenes/Choclitos.png",               categoryId: comida.id },
+    { sku: "SNK-006", name: "Chestris",              price: 2000,  stock: 24, minStock: 8,  image: "/imagenes/Chestris.webp",               categoryId: comida.id },
+    { sku: "SNK-007", name: "Detodito",              price: 2000,  stock: 24, minStock: 8,  image: "/imagenes/detodito.webp",               categoryId: comida.id },
+    { sku: "SNK-008", name: "NatuChips",             price: 2000,  stock: 20, minStock: 6,  image: "/imagenes/NatuChips.webp",              categoryId: comida.id },
+    { sku: "SNK-009", name: "Galletas",              price: 1500,  stock: 24, minStock: 8,  image: "/imagenes/Galletas.png",                categoryId: comida.id },
+    { sku: "SNK-010", name: "Maní",                  price: 1500,  stock: 20, minStock: 6,  image: "/imagenes/Maní.png",                    categoryId: comida.id },
+    { sku: "PKG-001", name: "Combo Corte + Bebida",  price: 35000, stock: 50, minStock: 0,  image: null,                                    categoryId: comida.id },
 
-    // ── Cabello ──────────────────────────────────────────────────────────────
-    { sku: "HR-001",  name: "Cera en Polvo Rolda",   price: 18000, stock: 10, minStock: 3,  image: "/imagenes/Cera en Polvo Rolda.png",     categoryId: cabello.id },
-    { sku: "HR-002",  name: "Cera Red One",          price: 22000, stock: 8,  minStock: 3,  image: "/imagenes/Cera red One.avif",           categoryId: cabello.id },
-    { sku: "HR-003",  name: "Crema Churcos Rolda",   price: 15000, stock: 10, minStock: 3,  image: "/imagenes/Crema CHURCOS Rolda.webp",    categoryId: cabello.id },
-    { sku: "HR-004",  name: "Crema White Rolda",     price: 15000, stock: 10, minStock: 3,  image: "/imagenes/Crema white Rolda.png",       categoryId: cabello.id },
-    { sku: "HR-005",  name: "Gel Black Rolda",       price: 12000, stock: 12, minStock: 4,  image: "/imagenes/Gel black Rolda.jpg",         categoryId: cabello.id },
-    { sku: "HR-006",  name: "Minoxidil 5%",          price: 35000, stock: 6,  minStock: 2,  image: "/imagenes/minoxidil_2.webp",             categoryId: cabello.id },
-
-    // ── Cuidado de Barba ─────────────────────────────────────────────────────
-    { sku: "BRD-001", name: "Mascarilla Black Mask", price: 25000, stock: 8,  minStock: 2,  image: "/imagenes/Mascarilla Black Mask.avif",  categoryId: barba.id  },
-
-    // ── Paquetes ─────────────────────────────────────────────────────────────
-    { sku: "PKG-001", name: "Combo Corte + Bebida",  price: 35000, stock: 50, minStock: 0,  image: null,                                    categoryId: paquetes.id },
+    // ── Belleza ──────────────────────────────────────────────────────────────
+    { sku: "HR-001",  name: "Cera en Polvo Rolda",   price: 18000, stock: 10, minStock: 3,  image: "/imagenes/Cera en Polvo Rolda.png",     categoryId: belleza.id },
+    { sku: "HR-002",  name: "Cera Red One",          price: 22000, stock: 8,  minStock: 3,  image: "/imagenes/Cera red One.avif",           categoryId: belleza.id },
+    { sku: "HR-003",  name: "Crema Churcos Rolda",   price: 15000, stock: 10, minStock: 3,  image: "/imagenes/Crema CHURCOS Rolda.webp",    categoryId: belleza.id },
+    { sku: "HR-004",  name: "Crema White Rolda",     price: 15000, stock: 10, minStock: 3,  image: "/imagenes/Crema white Rolda.png",       categoryId: belleza.id },
+    { sku: "HR-005",  name: "Gel Black Rolda",       price: 12000, stock: 12, minStock: 4,  image: "/imagenes/Gel black Rolda.jpg",         categoryId: belleza.id },
+    { sku: "HR-006",  name: "Minoxidil 5%",          price: 35000, stock: 6,  minStock: 2,  image: "/imagenes/minoxidil_2.webp",            categoryId: belleza.id },
+    { sku: "BRD-001", name: "Mascarilla Black Mask", price: 25000, stock: 8,  minStock: 2,  image: "/imagenes/Mascarilla Black Mask.avif",  categoryId: belleza.id },
   ];
 
   for (const p of products) {
-    await prisma.product.upsert({ where: { sku: p.sku }, update: {}, create: p });
+    await prisma.product.upsert({ where: { sku: p.sku }, update: { categoryId: p.categoryId }, create: p });
   }
 
+  // ── Admin user ──────────────────────────────────────────────────────────────
+  const hashedAdmin = await bcrypt.hash("Churco2026.", 10);
   await prisma.user.upsert({
     where: { email: "admin@groomandgold.com" },
-    update: {},
-    create: {
-      name: "Master Barber",
-      email: "admin@groomandgold.com",
-      password: await bcrypt.hash("admin123", 10),
-      role: "ADMIN",
-    },
-  });
-  await prisma.user.upsert({
-    where: { email: "empleado@groomandgold.com" },
-    update: {},
-    create: {
-      name: "Carlos Barber",
-      email: "empleado@groomandgold.com",
-      password: await bcrypt.hash("empleado123", 10),
-      role: "EMPLOYEE",
-    },
+    update: { name: "churcoadmin", email: "churcoadmin@churco.com", password: hashedAdmin },
+    create: { name: "churcoadmin", email: "churcoadmin@churco.com", password: hashedAdmin, role: "ADMIN" },
   });
 
-  console.log("✅ Seed completado — Groom & Gold");
+  // ── Employee user ───────────────────────────────────────────────────────────
+  const hashedEmployee = await bcrypt.hash("Empleado2026.", 10);
+  await prisma.user.upsert({
+    where: { email: "empleado@groomandgold.com" },
+    update: { name: "userEmpleado", email: "userEmpleado@churco.com", password: hashedEmployee },
+    create: { name: "userEmpleado", email: "userEmpleado@churco.com", password: hashedEmployee, role: "EMPLOYEE" },
+  });
+
+  console.log("✅ Seed completado — ContaChurco");
 }
 
 main()

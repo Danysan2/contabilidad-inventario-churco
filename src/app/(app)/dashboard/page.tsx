@@ -107,9 +107,13 @@ export default function DashboardPage() {
   if (!isAdmin) return null;
 
   const chartData = data?.dailyTotals.map((d) => ({
-    date: new Date(d.date).toLocaleDateString("es-MX", { day: "2-digit", month: "short" }),
+    date: period === "day"
+      ? new Date(d.date).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })
+      : new Date(d.date).toLocaleDateString("es-MX", { day: "2-digit", month: "short" }),
     total: Number(d.total),
   })) ?? [];
+
+  const chartTitle = period === "day" ? "Ingresos de Hoy" : period === "week" ? "Ingresos Semanales" : "Ingresos del Mes";
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -217,7 +221,7 @@ export default function DashboardPage() {
 
             {/* Area chart */}
             <div className="lg:col-span-2 card-premium rounded-xl p-lg">
-              <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Ingresos Diarios</h3>
+              <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>{chartTitle}</h3>
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={220}>
                   <AreaChart data={chartData}>
