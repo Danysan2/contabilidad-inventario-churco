@@ -33,7 +33,7 @@ function SaleDetailModal({ sale, onClose, onDelete, isAdmin }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 pb-24 md:pb-4">
       <div className="card-premium rounded-xl w-full max-w-md animate-slide-up shadow-2xl max-h-[85vh] flex flex-col">
         <div
           className="p-lg flex items-center justify-between"
