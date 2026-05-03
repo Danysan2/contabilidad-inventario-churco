@@ -115,9 +115,9 @@ async function main() {
   }
 
   // ── Migrate existing data to Sucursal Churco ────────────────────────────────
-  await prisma.sale.updateMany({ where: { branchId: { equals: undefined as unknown as string } }, data: { branchId: churco.id } }).catch(() => {});
-  await prisma.purchase.updateMany({ where: { branchId: { equals: undefined as unknown as string } }, data: { branchId: churco.id } }).catch(() => {});
-  await prisma.fixedExpense.updateMany({ where: { branchId: { equals: undefined as unknown as string } }, data: { branchId: churco.id } }).catch(() => {});
+  await prisma.sale.updateMany({ where: { branchId: null }, data: { branchId: churco.id } }).catch(() => {});
+  await prisma.purchase.updateMany({ where: { branchId: null }, data: { branchId: churco.id } }).catch(() => {});
+  await prisma.fixedExpense.updateMany({ where: { branchId: null }, data: { branchId: churco.id } }).catch(() => {});
 
   console.log("✅ Seed completado — ContaChurco (multi-sucursal)");
 }

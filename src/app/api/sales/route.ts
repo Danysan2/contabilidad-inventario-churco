@@ -22,12 +22,13 @@ export async function GET(req: NextRequest) {
 
   // Branch filter: EMPLOYEE always sees only their branch; ADMIN can filter by branchId param
   const branchParam = searchParams.get("branchId");
-  const branchId =
+  const rawBranchIdGet =
     session.user.role === "EMPLOYEE"
       ? session.user.branchId
       : branchParam && branchParam !== "all"
       ? branchParam
       : undefined;
+  const branchId = rawBranchIdGet || undefined;
 
   const where = {
     ...(branchId && { branchId }),
@@ -71,10 +72,11 @@ export async function POST(req: NextRequest) {
   const { items, note } = parsed.data;
 
   // Branch: EMPLOYEE always uses their own branchId; ADMIN uses body.branchId or their own
-  const branchId =
+  const rawBranchId =
     session.user.role === "EMPLOYEE"
       ? session.user.branchId
       : (body.branchId as string | undefined) || session.user.branchId;
+  const branchId = rawBranchId || undefined;
 
   const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
 

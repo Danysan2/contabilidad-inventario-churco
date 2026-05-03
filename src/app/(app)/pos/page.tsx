@@ -9,6 +9,7 @@ function resolveImage(src: string): string {
   return `/imagenes/${encodeURIComponent(src)}`;
 }
 
+type Branch = { id: string; name: string; slug: string };
 type Category = { id: string; name: string; slug: string };
 type Product = {
   id: string; name: string; sku: string; price: number; stock: number;
@@ -84,13 +85,14 @@ function ProductCard({ product, quantity, onAdd, onRemove }: {
   );
 }
 
-function ConfirmModal({ cart, total, onConfirm, onCancel, loading, isAdmin, defaultBranchId }: {
+function ConfirmModal({ cart, total, onConfirm, onCancel, loading, isAdmin, defaultBranchId, branches }: {
   cart: CartItem[]; total: number;
   onConfirm: (note: string, branchId: string) => void;
   onCancel: () => void;
   loading: boolean;
   isAdmin: boolean;
   defaultBranchId: string;
+  branches: Branch[];
 }) {
   const [note, setNote] = useState("");
   const [branchId, setBranchId] = useState(defaultBranchId);
@@ -158,12 +160,13 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading, isAdmin, defa
                 className="px-3 py-2 rounded font-sans text-sm outline-none"
                 style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.15)", color: "#eae1d4" }}
               >
-                <option value="churco">Sucursal Churco</option>
-                <option value="suc2">Sucursal 2</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
               </select>
             ) : (
               <div className="font-sans text-sm px-3 py-2 rounded" style={{ background: "var(--surface-2)", color: "rgba(234,225,212,0.6)" }}>
-                Sucursal 2
+                {branches.find((b) => b.id === defaultBranchId)?.name ?? "Sucursal 2"}
               </div>
             )}
           </div>
@@ -219,6 +222,7 @@ export default function POSPage() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -242,6 +246,7 @@ export default function POSPage() {
 
   useEffect(() => {
     fetch("/api/categories").then((r) => r.json()).then(setCategories);
+    fetch("/api/branches").then((r) => r.json()).then(setBranches);
   }, []);
 
   useEffect(() => {
@@ -453,7 +458,8 @@ export default function POSPage() {
           onCancel={() => setShowConfirm(false)}
           loading={submitting}
           isAdmin={isAdmin}
-          defaultBranchId={isAdmin ? "churco" : sessionBranchId}
+          defaultBranchId={isAdmin ? (branches[0]?.id ?? sessionBranchId) : sessionBranchId}
+          branches={branches}
         />
       )}
 
