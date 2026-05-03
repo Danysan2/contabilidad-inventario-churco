@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 function resolveImage(src: string): string {
@@ -216,8 +214,6 @@ function ProductModal({ product, categories, onSave, onClose }: {
 }
 
 export default function InventoryPage() {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -225,8 +221,6 @@ export default function InventoryPage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null | undefined>(undefined);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  const isAdmin = session?.user?.role === "ADMIN";
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -242,15 +236,13 @@ export default function InventoryPage() {
   }, [activeCategory, search]);
 
   useEffect(() => {
-    if (!isAdmin) { router.push("/pos"); return; }
     fetch("/api/categories").then((r) => r.json()).then(setCategories);
-  }, [isAdmin, router]);
+  }, []);
 
   useEffect(() => {
-    if (!isAdmin) return;
     const t = setTimeout(fetchProducts, 300);
     return () => clearTimeout(t);
-  }, [fetchProducts, isAdmin]);
+  }, [fetchProducts]);
 
   async function handleSave(data: Partial<Product>) {
     const url = data.id ? `/api/products/${data.id}` : "/api/products";
@@ -268,8 +260,6 @@ export default function InventoryPage() {
     setDeleteId(null);
     fetchProducts();
   }
-
-  if (!isAdmin) return null;
 
   const lowStockCount = products.filter((p) => p.stock <= p.minStock && p.active).length;
 

@@ -8,7 +8,7 @@ import { useSession, signOut } from "next-auth/react";
 const navItems = [
   { href: "/dashboard", label: "Dashboard",      icon: "dashboard",      adminOnly: true  },
   { href: "/movements", label: "Movimientos",     icon: "history",        adminOnly: false },
-  { href: "/inventory", label: "Inventario",      icon: "inventory_2",    adminOnly: true  },
+  { href: "/inventory", label: "Inventario",      icon: "inventory_2",    adminOnly: false },
   { href: "/pos",       label: "Punto de Venta",  icon: "point_of_sale",  adminOnly: false },
   { href: "/catalogo",  label: "Catálogo",         icon: "photo_library",  adminOnly: false },
   { href: "/ranking",   label: "Ranking",          icon: "military_tech",  adminOnly: false },

@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, ComposedChart, Line, Area,
+  BarChart, Bar, Cell, ComposedChart, Line, Area,
   Legend,
 } from "recharts";
 
@@ -289,8 +289,8 @@ export default function DashboardPage() {
                     </div>
                   ) : null} />
                   <Bar dataKey="revenue" name="Ingresos" radius={4}>
-                    {data.branchRevenue.map((entry, index) => (
-                      <rect key={index} fill={index === 0 ? "#fc5500" : "#b83d00"} />
+                    {data.branchRevenue.map((_, index) => (
+                      <Cell key={index} fill={index === 0 ? "#fc5500" : "#ff7733"} />
                     ))}
                   </Bar>
                 </BarChart>

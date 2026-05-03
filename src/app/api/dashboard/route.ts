@@ -175,7 +175,26 @@ export async function GET(req: NextRequest) {
     .map(([name, revenue]) => ({ name, revenue }))
     .sort((a, b) => b.revenue - a.revenue);
 
-  console.log(`[DASHBOARD] Resultado — totalRevenue=${currentTotal} totalSales=${currentSales._count} branches=${JSON.stringify(branchRevenueNamed.map(b => `${b.name}:${b.revenue}`))}`);
+  // Merge purchases + prorated fixed expenses per period bucket
+  const dailyFixedPerBucket =
+    period === "day" ? totalMonthlyFixed / 30 / 24 :
+    totalMonthlyFixed / 30; // per day for week/month
+
+  // Build a map of all purchase buckets, then add fixed amount to each
+  const purchaseMap = new Map(dailyPurchases.map((d) => [d.date, Number(d.total)]));
+
+  // Also collect all bucket dates from dailyTotals so buckets with $0 purchases still get fixed expenses
+  const allBucketDates = new Set([
+    ...dailyPurchases.map((d) => d.date),
+    ...dailyTotals.map((d) => d.date),
+  ]);
+
+  const dailyExpensesCombined = Array.from(allBucketDates).map((date) => ({
+    date,
+    total: (purchaseMap.get(date) ?? 0) + dailyFixedPerBucket,
+  })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  console.log(`[DASHBOARD] Resultado — totalRevenue=${currentTotal} totalSales=${currentSales._count} branches=${JSON.stringify(branchRevenueNamed.map(b => `${b.name}:${b.revenue}`))} dailyFixedPerBucket=${dailyFixedPerBucket.toFixed(2)}`);
 
   return NextResponse.json({
     totalRevenue: currentTotal,
@@ -193,7 +212,7 @@ export async function GET(req: NextRequest) {
     topProducts: topProducts.map((p) => ({ productId: p.productId, name: topProductMap[p.productId] ?? "—", quantity: p._sum.quantity ?? 0 })),
     recentSales,
     dailyTotals,
-    dailyExpenses: dailyPurchases,
+    dailyExpenses: dailyExpensesCombined,
     salesByGroup,
     branchRevenue: branchRevenueNamed,
   });
