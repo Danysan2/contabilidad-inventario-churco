@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
         const valid = await bcrypt.compare(credentials.password, user.password);
         if (!valid) return null;
 
-        return { id: user.id, name: user.name, email: user.email, role: user.role };
+        return { id: user.id, name: user.name, email: user.email, role: user.role, branchId: user.branchId };
       },
     }),
   ],
@@ -34,6 +34,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = (user as { role: string }).role;
+        token.branchId = (user as { branchId: string }).branchId;
       }
       return token;
     },
@@ -41,6 +42,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.branchId = token.branchId as string;
       }
       return session;
     },

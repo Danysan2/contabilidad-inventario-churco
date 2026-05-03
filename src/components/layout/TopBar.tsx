@@ -29,7 +29,7 @@ export default function TopBar() {
         className="flex justify-between items-center w-full px-5 py-3 sticky top-0 z-40"
         style={{
           background: "rgba(13,11,6,0.88)",
-          borderBottom: "1px solid rgba(212,175,55,0.08)",
+          borderBottom: "1px solid rgba(252,85,0,0.08)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
         }}
@@ -49,8 +49,8 @@ export default function TopBar() {
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
               style={{
-                background: "rgba(212,175,55,0.1)",
-                border: "1px solid rgba(212,175,55,0.2)",
+                background: "rgba(252,85,0,0.1)",
+                border: "1px solid rgba(252,85,0,0.2)",
               }}
             >
               <span
@@ -68,21 +68,12 @@ export default function TopBar() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          <button
-            className="transition-colors"
-            style={{ color: "rgba(234,225,212,0.4)" }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--gold-light)")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(234,225,212,0.4)")}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>notifications</span>
-          </button>
-
           <div className="flex items-center gap-2">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center font-display text-sm font-bold cursor-pointer"
               style={{
-                background: "rgba(212,175,55,0.12)",
-                border: "1px solid rgba(212,175,55,0.22)",
+                background: "rgba(252,85,0,0.12)",
+                border: "1px solid rgba(252,85,0,0.22)",
                 color: "var(--gold)",
               }}
             >
@@ -112,21 +103,21 @@ export default function TopBar() {
             className="absolute left-0 top-0 h-full w-72 flex flex-col animate-fade-in"
             style={{
               background: "linear-gradient(180deg, var(--surface-1) 0%, var(--surface-0) 100%)",
-              borderRight: "1px solid rgba(212,175,55,0.12)",
+              borderRight: "1px solid rgba(252,85,0,0.12)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Drawer header */}
             <div
               className="px-5 py-4 flex items-center justify-between"
-              style={{ borderBottom: "1px solid rgba(212,175,55,0.08)" }}
+              style={{ borderBottom: "1px solid rgba(252,85,0,0.08)" }}
             >
               <div className="flex items-center gap-3">
                 <div
                   className="w-9 h-9 rounded-full flex items-center justify-center font-display text-base font-bold"
                   style={{
-                    background: "rgba(212,175,55,0.12)",
-                    border: "1px solid rgba(212,175,55,0.25)",
+                    background: "rgba(252,85,0,0.12)",
+                    border: "1px solid rgba(252,85,0,0.25)",
                     color: "var(--gold)",
                   }}
                 >
@@ -136,7 +127,7 @@ export default function TopBar() {
                   <p className="font-sans text-sm font-semibold" style={{ color: "#eae1d4" }}>
                     {session?.user?.name ?? "Usuario"}
                   </p>
-                  <p className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.55)" }}>
+                  <p className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.55)" }}>
                     {isAdmin ? "Administrador" : "Empleado"}
                   </p>
                 </div>
@@ -150,7 +141,7 @@ export default function TopBar() {
             </div>
 
             {/* Nueva Venta */}
-            <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}>
+            <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}>
               <Link
                 href="/pos"
                 onClick={() => setDrawerOpen(false)}
@@ -187,7 +178,7 @@ export default function TopBar() {
             </ul>
 
             {/* Logout */}
-            <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(212,175,55,0.06)" }}>
+            <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(252,85,0,0.06)" }}>
               <button
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 className="flex items-center gap-3 px-2 py-2.5 w-full rounded font-sans text-sm transition-all"

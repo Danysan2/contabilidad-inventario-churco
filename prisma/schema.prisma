@@ -19,6 +19,18 @@ enum StockMovementType {
   ADJUSTMENT
 }
 
+model Branch {
+  id        String         @id @default(cuid())
+  name      String         @unique
+  slug      String         @unique
+  active    Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  users     User[]
+  sales     Sale[]
+  purchases Purchase[]
+  expenses  FixedExpense[]
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -26,6 +38,8 @@ model User {
   password  String
   role      Role     @default(EMPLOYEE)
   active    Boolean  @default(true)
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   sales     Sale[]
@@ -69,10 +83,13 @@ model Sale {
   updatedAt      DateTime   @updatedAt
   employeeId     String
   employee       User       @relation(fields: [employeeId], references: [id])
+  branchId       String
+  branch         Branch     @relation(fields: [branchId], references: [id])
   items          SaleItem[]
 
   @@index([createdAt])
   @@index([employeeId])
+  @@index([branchId])
 }
 
 model SaleItem {
@@ -90,9 +107,12 @@ model Purchase {
   date      DateTime       @default(now())
   note      String?
   createdAt DateTime       @default(now())
+  branchId  String
+  branch    Branch         @relation(fields: [branchId], references: [id])
   items     PurchaseItem[]
 
   @@index([date])
+  @@index([branchId])
 }
 
 model PurchaseItem {
@@ -115,7 +135,11 @@ model FixedExpense {
   categorySlug String?
   description  String?
   active       Boolean  @default(true)
+  branchId     String
+  branch       Branch   @relation(fields: [branchId], references: [id])
   createdAt    DateTime @default(now())
+
+  @@index([branchId])
 }
 
 model StockMovement {

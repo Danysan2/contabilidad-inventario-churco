@@ -15,21 +15,33 @@ export async function GET(req: NextRequest) {
   const from = new Date(year, month - 1, 1);
   const to = new Date(year, month, 1);
 
-  // Raw query: sum units and revenue per product for the period
-  const rows = await prisma.$queryRaw<
+  // Branch filter: EMPLOYEE always sees their branch; ADMIN can filter
+  const branchParam = searchParams.get("branchId");
+  const branchId =
+    session.user.role === "EMPLOYEE"
+      ? session.user.branchId
+      : branchParam && branchParam !== "all"
+      ? branchParam
+      : null;
+
+  const rows = await prisma.$queryRawUnsafe<
     { productId: string; totalUnits: bigint; totalRevenue: number }[]
-  >`
-    SELECT
+  >(
+    `SELECT
       si."productId",
       SUM(si.quantity)::bigint             AS "totalUnits",
       SUM(si.quantity * si."unitPrice")    AS "totalRevenue"
     FROM "SaleItem" si
     JOIN "Sale" s ON si."saleId" = s.id
-    WHERE s."createdAt" >= ${from}
-      AND s."createdAt" < ${to}
+    WHERE s."createdAt" >= $1
+      AND s."createdAt" < $2
+      ${branchId ? `AND s."branchId" = $3` : ""}
     GROUP BY si."productId"
-    ORDER BY "totalUnits" DESC
-  `;
+    ORDER BY "totalUnits" DESC`,
+    from,
+    to,
+    ...(branchId ? [branchId] : [])
+  );
 
   if (!rows.length) {
     return NextResponse.json({ ranking: [], year, month, from: from.toISOString(), to: to.toISOString() });

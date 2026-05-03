@@ -13,19 +13,25 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") ?? "1");
   const limit = 20;
+  const branchParam = searchParams.get("branchId");
+  const branchId = branchParam && branchParam !== "all" ? branchParam : undefined;
+
+  const where = branchId ? { branchId } : {};
 
   const [purchases, total] = await Promise.all([
     prisma.purchase.findMany({
+      where,
       orderBy: { date: "desc" },
       skip: (page - 1) * limit,
       take: limit,
       include: {
+        branch: { select: { id: true, name: true, slug: true } },
         items: {
           include: { product: { select: { id: true, name: true, sku: true } } },
         },
       },
     }),
-    prisma.purchase.count(),
+    prisma.purchase.count({ where }),
   ]);
 
   return NextResponse.json({ purchases, total });
@@ -43,11 +49,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Datos inválidos", details: parsed.error.flatten() }, { status: 400 });
   }
   const { note, items } = parsed.data;
+  const branchId = (body.branchId as string | undefined) || session.user.branchId;
 
   const purchase = await prisma.$transaction(async (tx) => {
     const created = await tx.purchase.create({
       data: {
         note,
+        branchId,
         items: {
           create: items.map((i) => ({
             productId: i.productId,
@@ -59,7 +67,6 @@ export async function POST(req: NextRequest) {
       include: { items: { include: { product: { select: { id: true, name: true } } } } },
     });
 
-    // Update each product: add stock and set costPrice to latest unit cost
     for (const item of items) {
       await tx.product.update({
         where: { id: item.productId },

@@ -38,21 +38,21 @@ export default function LoginPage() {
         className="hidden lg:flex flex-col justify-between w-[480px] shrink-0 relative overflow-hidden p-12"
         style={{
           background: "linear-gradient(160deg, #16130b 0%, #0d0b06 60%, #1c1810 100%)",
-          borderRight: "1px solid rgba(212,175,55,0.1)",
+          borderRight: "1px solid rgba(252,85,0,0.1)",
         }}
       >
         {/* Corner ornament top-right */}
         <div
           className="absolute top-0 right-0 w-48 h-48 pointer-events-none"
           style={{
-            background: "radial-gradient(circle at top right, rgba(212,175,55,0.06) 0%, transparent 70%)",
+            background: "radial-gradient(circle at top right, rgba(252,85,0,0.06) 0%, transparent 70%)",
           }}
         />
         {/* Corner ornament bottom-left */}
         <div
           className="absolute bottom-0 left-0 w-64 h-64 pointer-events-none"
           style={{
-            background: "radial-gradient(circle at bottom left, rgba(212,175,55,0.05) 0%, transparent 70%)",
+            background: "radial-gradient(circle at bottom left, rgba(252,85,0,0.05) 0%, transparent 70%)",
           }}
         />
 
@@ -74,9 +74,9 @@ export default function LoginPage() {
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center mb-8"
             style={{
-              background: "rgba(212,175,55,0.08)",
-              border: "1px solid rgba(212,175,55,0.2)",
-              boxShadow: "0 0 40px rgba(212,175,55,0.1)",
+              background: "rgba(252,85,0,0.08)",
+              border: "1px solid rgba(252,85,0,0.2)",
+              boxShadow: "0 0 40px rgba(252,85,0,0.1)",
             }}
           >
             <span className="material-symbols-outlined icon-fill" style={{ color: "var(--gold)", fontSize: 28 }}>
@@ -104,7 +104,7 @@ export default function LoginPage() {
 
         {/* Bottom tagline */}
         <div>
-          <p className="font-display italic text-2xl" style={{ color: "rgba(212,175,55,0.3)" }}>
+          <p className="font-display italic text-2xl" style={{ color: "rgba(252,85,0,0.3)" }}>
             &ldquo;El arte del buen corte.&rdquo;
           </p>
         </div>
@@ -117,7 +117,7 @@ export default function LoginPage() {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(212,175,55,0.03) 0%, transparent 80%)",
+            background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(252,85,0,0.03) 0%, transparent 80%)",
           }}
         />
 
@@ -128,9 +128,9 @@ export default function LoginPage() {
             <div
               className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-4"
               style={{
-                background: "rgba(212,175,55,0.08)",
-                border: "1px solid rgba(212,175,55,0.2)",
-                boxShadow: "0 0 30px rgba(212,175,55,0.1)",
+                background: "rgba(252,85,0,0.08)",
+                border: "1px solid rgba(252,85,0,0.2)",
+                boxShadow: "0 0 30px rgba(252,85,0,0.1)",
               }}
             >
               <span className="material-symbols-outlined icon-fill" style={{ color: "var(--gold)", fontSize: 26 }}>
@@ -155,7 +155,7 @@ export default function LoginPage() {
             <div className="flex flex-col gap-1">
               <label
                 className="font-sans text-[10px] font-bold uppercase tracking-[0.15em]"
-                style={{ color: "rgba(212,175,55,0.7)" }}
+                style={{ color: "rgba(252,85,0,0.7)" }}
               >
                 Correo electrónico
               </label>
@@ -173,7 +173,7 @@ export default function LoginPage() {
             <div className="flex flex-col gap-1">
               <label
                 className="font-sans text-[10px] font-bold uppercase tracking-[0.15em]"
-                style={{ color: "rgba(212,175,55,0.7)" }}
+                style={{ color: "rgba(252,85,0,0.7)" }}
               >
                 Contraseña
               </label>

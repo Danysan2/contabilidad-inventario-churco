@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 function resolveImage(src: string): string {
   if (src.startsWith("data:") || src.startsWith("http") || src.startsWith("/")) return src;
@@ -24,7 +25,7 @@ function ProductCard({ product, quantity, onAdd, onRemove }: {
   return (
     <div
       className={`bg-[#1C1C1C] border rounded-lg overflow-hidden flex flex-col transition-all ${
-        quantity > 0 ? "border-primary/50 shadow-[0_0_15px_rgba(212,175,55,0.1)]" : "border-[#2A2A2A]"
+        quantity > 0 ? "border-primary/50 shadow-[0_0_15px_rgba(252,85,0,0.1)]" : "border-[#2A2A2A]"
       } ${outOfStock ? "opacity-50" : "active:scale-[0.98]"}`}
     >
       <div className="aspect-square relative bg-[#121212] p-3 flex items-center justify-center">
@@ -83,13 +84,16 @@ function ProductCard({ product, quantity, onAdd, onRemove }: {
   );
 }
 
-function ConfirmModal({ cart, total, onConfirm, onCancel, loading }: {
+function ConfirmModal({ cart, total, onConfirm, onCancel, loading, isAdmin, defaultBranchId }: {
   cart: CartItem[]; total: number;
-  onConfirm: (note: string) => void;
+  onConfirm: (note: string, branchId: string) => void;
   onCancel: () => void;
   loading: boolean;
+  isAdmin: boolean;
+  defaultBranchId: string;
 }) {
   const [note, setNote] = useState("");
+  const [branchId, setBranchId] = useState(defaultBranchId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 pb-24 md:pb-4">
@@ -98,7 +102,7 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading }: {
       >
         <div
           className="p-lg flex items-center justify-between"
-          style={{ borderBottom: "1px solid rgba(212,175,55,0.1)" }}
+          style={{ borderBottom: "1px solid rgba(252,85,0,0.1)" }}
         >
           <h3 className="font-display text-xl font-semibold" style={{ color: "#eae1d4" }}>
             Confirmar Venta
@@ -118,7 +122,7 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading }: {
               <div
                 key={item.product.id}
                 className="flex justify-between items-center py-2"
-                style={{ borderBottom: "1px solid rgba(212,175,55,0.07)" }}
+                style={{ borderBottom: "1px solid rgba(252,85,0,0.07)" }}
               >
                 <div>
                   <div className="font-sans text-sm" style={{ color: "#eae1d4" }}>{item.product.name}</div>
@@ -134,7 +138,7 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading }: {
           </div>
 
           <div className="flex justify-between items-center pt-3">
-            <span className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
+            <span className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>
               Total
             </span>
             <span className="font-display text-2xl font-bold text-gold-gradient">
@@ -142,8 +146,30 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading }: {
             </span>
           </div>
 
+          {/* Branch selector */}
           <div className="flex flex-col gap-1 mt-2">
-            <label className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
+            <label className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>
+              Sucursal
+            </label>
+            {isAdmin ? (
+              <select
+                value={branchId}
+                onChange={(e) => setBranchId(e.target.value)}
+                className="px-3 py-2 rounded font-sans text-sm outline-none"
+                style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.15)", color: "#eae1d4" }}
+              >
+                <option value="churco">Sucursal Churco</option>
+                <option value="suc2">Sucursal 2</option>
+              </select>
+            ) : (
+              <div className="font-sans text-sm px-3 py-2 rounded" style={{ background: "var(--surface-2)", color: "rgba(234,225,212,0.6)" }}>
+                Sucursal 2
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1 mt-2">
+            <label className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>
               Nota (opcional)
             </label>
             <input
@@ -156,20 +182,20 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading }: {
           </div>
         </div>
 
-        <div className="p-lg flex gap-sm" style={{ borderTop: "1px solid rgba(212,175,55,0.1)" }}>
+        <div className="p-lg flex gap-sm" style={{ borderTop: "1px solid rgba(252,85,0,0.1)" }}>
           <button
             onClick={onCancel}
             className="flex-1 py-3 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
             style={{
               background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(212,175,55,0.1)",
+              border: "1px solid rgba(252,85,0,0.1)",
               color: "rgba(234,225,212,0.5)",
             }}
           >
             Cancelar
           </button>
           <button
-            onClick={() => onConfirm(note)}
+            onClick={() => onConfirm(note, branchId)}
             disabled={loading}
             className="btn-gold flex-grow py-3 px-6 rounded flex items-center justify-center gap-2 disabled:opacity-50"
           >
@@ -187,6 +213,10 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading }: {
 }
 
 export default function POSPage() {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
+  const sessionBranchId = session?.user?.branchId ?? "";
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -238,7 +268,7 @@ export default function POSPage() {
   const cartTotal = cart.reduce((sum, i) => sum + i.quantity * Number(i.product.price), 0);
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
-  async function handleConfirm(note: string) {
+  async function handleConfirm(note: string, branchId: string) {
     setSubmitting(true);
     try {
       const res = await fetch("/api/sales", {
@@ -247,6 +277,7 @@ export default function POSPage() {
         body: JSON.stringify({
           items: cart.map((i) => ({ productId: i.product.id, quantity: i.quantity, unitPrice: Number(i.product.price) })),
           note,
+          branchId,
         }),
       });
       if (res.ok) {
@@ -282,7 +313,7 @@ export default function POSPage() {
         {cart.length > 0 && (
           <div className="flex items-center gap-md">
             <div className="text-right">
-              <div className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>TOTAL</div>
+              <div className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>TOTAL</div>
               <div className="font-display text-2xl font-bold text-gold-gradient">${cartTotal.toLocaleString("es-MX")}</div>
             </div>
             <button
@@ -313,11 +344,11 @@ export default function POSPage() {
             className="w-full rounded-lg py-3 pl-10 pr-4 font-sans text-sm outline-none transition-colors"
             style={{
               background: "var(--surface-2)",
-              border: "1px solid rgba(212,175,55,0.1)",
+              border: "1px solid rgba(252,85,0,0.1)",
               color: "#eae1d4",
             }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(212,175,55,0.35)")}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(212,175,55,0.1)")}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(252,85,0,0.35)")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(252,85,0,0.1)")}
           />
         </div>
       </div>
@@ -333,8 +364,8 @@ export default function POSPage() {
               className="whitespace-nowrap font-sans text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full transition-all"
               style={
                 isActive
-                  ? { background: "rgba(212,175,55,0.15)", color: "var(--gold-light)", border: "1px solid rgba(212,175,55,0.35)" }
-                  : { background: "var(--surface-2)", color: "rgba(234,225,212,0.4)", border: "1px solid rgba(212,175,55,0.06)" }
+                  ? { background: "rgba(252,85,0,0.15)", color: "var(--gold-light)", border: "1px solid rgba(252,85,0,0.35)" }
+                  : { background: "var(--surface-2)", color: "rgba(234,225,212,0.4)", border: "1px solid rgba(252,85,0,0.06)" }
               }
             >
               {cat.name}
@@ -380,12 +411,12 @@ export default function POSPage() {
             className="rounded-xl p-4 flex items-center justify-between shadow-2xl"
             style={{
               background: "var(--surface-2)",
-              border: "1px solid rgba(212,175,55,0.2)",
+              border: "1px solid rgba(252,85,0,0.2)",
               boxShadow: "0 -8px 32px rgba(0,0,0,0.6)",
             }}
           >
             <div>
-              <p className="font-sans text-[9px] uppercase tracking-widest mb-1" style={{ color: "rgba(212,175,55,0.55)" }}>
+              <p className="font-sans text-[9px] uppercase tracking-widest mb-1" style={{ color: "rgba(252,85,0,0.55)" }}>
                 Orden actual
               </p>
               <p className="font-sans text-sm font-bold" style={{ color: "#eae1d4" }}>
@@ -394,7 +425,7 @@ export default function POSPage() {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="font-sans text-[9px] uppercase tracking-widest mb-1" style={{ color: "rgba(212,175,55,0.55)" }}>
+                <p className="font-sans text-[9px] uppercase tracking-widest mb-1" style={{ color: "rgba(252,85,0,0.55)" }}>
                   Total
                 </p>
                 <p className="font-display text-xl font-bold text-gold-gradient">
@@ -421,6 +452,8 @@ export default function POSPage() {
           onConfirm={handleConfirm}
           onCancel={() => setShowConfirm(false)}
           loading={submitting}
+          isAdmin={isAdmin}
+          defaultBranchId={isAdmin ? "churco" : sessionBranchId}
         />
       )}
 

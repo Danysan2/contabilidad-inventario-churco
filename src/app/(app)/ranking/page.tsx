@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 type RankedProduct = {
   rank: number;
@@ -35,21 +36,26 @@ function resolveImage(src: string): string {
 }
 
 export default function RankingPage() {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
+  const [branchFilter, setBranchFilter] = useState<string>("all");
   const [data, setData] = useState<RankingData | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetch_ = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/ranking?year=${year}&month=${month}`);
+      const params = new URLSearchParams({ year: String(year), month: String(month) });
+      if (isAdmin && branchFilter !== "all") params.set("branchId", branchFilter);
+      const res = await fetch(`/api/ranking?${params}`);
       if (res.ok) setData(await res.json());
     } finally {
       setLoading(false);
     }
-  }, [year, month]);
+  }, [year, month, isAdmin, branchFilter]);
 
   useEffect(() => { fetch_(); }, [fetch_]);
 
@@ -82,6 +88,20 @@ export default function RankingPage() {
             Productos más vendidos por mes.
           </p>
         </div>
+
+        {/* Branch filter (admin only) */}
+        {isAdmin && (
+          <select
+            value={branchFilter}
+            onChange={(e) => setBranchFilter(e.target.value)}
+            className="px-3 py-2 rounded font-sans text-sm outline-none"
+            style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.15)", color: "#eae1d4" }}
+          >
+            <option value="all">Todas</option>
+            <option value="churco">Sucursal Churco</option>
+            <option value="suc2">Sucursal 2</option>
+          </select>
+        )}
 
         {/* Month navigator */}
         <div className="flex items-center gap-sm bg-surface-container border border-outline-variant rounded-lg px-2 py-1">

@@ -4,6 +4,20 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
+  // ── Branches ────────────────────────────────────────────────────────────────
+  const [churco, suc2] = await Promise.all([
+    prisma.branch.upsert({
+      where: { slug: "churco" },
+      update: { name: "Sucursal Churco" },
+      create: { name: "Sucursal Churco", slug: "churco" },
+    }),
+    prisma.branch.upsert({
+      where: { slug: "suc2" },
+      update: { name: "Sucursal 2" },
+      create: { name: "Sucursal 2", slug: "suc2" },
+    }),
+  ]);
+
   // ── Categories ──────────────────────────────────────────────────────────────
   const [bebidas, belleza, comida] = await Promise.all([
     prisma.category.upsert({ where: { slug: "bebidas" }, update: { name: "Bebidas" }, create: { name: "Bebidas", slug: "bebidas" } }),
@@ -72,20 +86,35 @@ async function main() {
   // ── Admin user ──────────────────────────────────────────────────────────────
   const hashedAdmin = await bcrypt.hash("Churco2026.", 10);
   await prisma.user.upsert({
-    where: { email: "admin@groomandgold.com" },
-    update: { name: "churcoadmin", email: "churcoadmin@churco.com", password: hashedAdmin },
-    create: { name: "churcoadmin", email: "churcoadmin@churco.com", password: hashedAdmin, role: "ADMIN" },
+    where: { email: "churcoadmin@churco.com" },
+    update: { name: "churcoadmin", password: hashedAdmin, branchId: churco.id },
+    create: { name: "churcoadmin", email: "churcoadmin@churco.com", password: hashedAdmin, role: "ADMIN", branchId: churco.id },
   });
 
   // ── Employee user ───────────────────────────────────────────────────────────
   const hashedEmployee = await bcrypt.hash("Empleado2026.", 10);
   await prisma.user.upsert({
-    where: { email: "empleado@groomandgold.com" },
-    update: { name: "userEmpleado", email: "userEmpleado@churco.com", password: hashedEmployee },
-    create: { name: "userEmpleado", email: "userEmpleado@churco.com", password: hashedEmployee, role: "EMPLOYEE" },
+    where: { email: "userSuc2@gmail.com" },
+    update: { name: "userSuc2", password: hashedEmployee, branchId: suc2.id },
+    create: { name: "userSuc2", email: "userSuc2@gmail.com", password: hashedEmployee, role: "EMPLOYEE", branchId: suc2.id },
   });
 
-  console.log("✅ Seed completado — ContaChurco");
+  // ── Migrate existing records to Sucursal Churco (safe: only if branchId missing) ──
+  // These run via raw SQL to handle null branchId from before migration
+  await prisma.$executeRawUnsafe(
+    `UPDATE "Sale" SET "branchId" = '${churco.id}' WHERE "branchId" IS NULL OR "branchId" = ''`
+  ).catch(() => {});
+  await prisma.$executeRawUnsafe(
+    `UPDATE "Purchase" SET "branchId" = '${churco.id}' WHERE "branchId" IS NULL OR "branchId" = ''`
+  ).catch(() => {});
+  await prisma.$executeRawUnsafe(
+    `UPDATE "FixedExpense" SET "branchId" = '${churco.id}' WHERE "branchId" IS NULL OR "branchId" = ''`
+  ).catch(() => {});
+  await prisma.$executeRawUnsafe(
+    `UPDATE "User" SET "branchId" = '${churco.id}' WHERE "branchId" IS NULL OR "branchId" = ''`
+  ).catch(() => {});
+
+  console.log("✅ Seed completado — ContaChurco (multi-sucursal)");
 }
 
 main()

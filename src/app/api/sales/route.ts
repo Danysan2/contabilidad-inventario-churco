@@ -20,8 +20,17 @@ export async function GET(req: NextRequest) {
   if (from && !isValidDate(from)) return NextResponse.json({ error: "Fecha 'from' inválida" }, { status: 400 });
   if (to && !isValidDate(to)) return NextResponse.json({ error: "Fecha 'to' inválida" }, { status: 400 });
 
+  // Branch filter: EMPLOYEE always sees only their branch; ADMIN can filter by branchId param
+  const branchParam = searchParams.get("branchId");
+  const branchId =
+    session.user.role === "EMPLOYEE"
+      ? session.user.branchId
+      : branchParam && branchParam !== "all"
+      ? branchParam
+      : undefined;
+
   const where = {
-    ...(session.user.role === "EMPLOYEE" && { employeeId: session.user.id }),
+    ...(branchId && { branchId }),
     ...(from || to
       ? {
           createdAt: {
@@ -37,6 +46,7 @@ export async function GET(req: NextRequest) {
       where,
       include: {
         employee: { select: { id: true, name: true } },
+        branch: { select: { id: true, name: true, slug: true } },
         items: { include: { product: { select: { id: true, name: true, image: true } } } },
       },
       orderBy: { createdAt: "desc" },
@@ -60,6 +70,12 @@ export async function POST(req: NextRequest) {
   }
   const { items, note } = parsed.data;
 
+  // Branch: EMPLOYEE always uses their own branchId; ADMIN uses body.branchId or their own
+  const branchId =
+    session.user.role === "EMPLOYEE"
+      ? session.user.branchId
+      : (body.branchId as string | undefined) || session.user.branchId;
+
   const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
 
   const sale = await prisma.$transaction(async (tx) => {
@@ -77,10 +93,12 @@ export async function POST(req: NextRequest) {
         total,
         note,
         employeeId: session.user.id,
+        branchId,
         items: { create: items.map((i) => ({ productId: i.productId, quantity: i.quantity, unitPrice: i.unitPrice })) },
       },
       include: {
         employee: { select: { name: true } },
+        branch: { select: { name: true } },
         items: { include: { product: { select: { name: true } } } },
       },
     });
@@ -98,7 +116,7 @@ export async function POST(req: NextRequest) {
     return created;
   });
 
-  // Sync to Google Sheets (fire and forget, with logging on failure)
+  // Sync to Google Sheets (fire and forget)
   appendSaleToSheet({
     id: sale.id,
     createdAt: sale.createdAt,

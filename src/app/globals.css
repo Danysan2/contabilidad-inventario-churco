@@ -8,13 +8,13 @@
 /* ── CSS Custom Properties ─────────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
-  --gold: #d4af37;
-  --gold-light: #f2ca50;
-  --gold-dim: #9a7d1e;
-  --surface-0: #0d0b06;
-  --surface-1: #16130b;
-  --surface-2: #1c1810;
-  --surface-3: #231f17;
+  --gold: #fc5500;
+  --gold-light: #ff7733;
+  --gold-dim: #b83d00;
+  --surface-0: #0e0906;
+  --surface-1: #180e08;
+  --surface-2: #1f1109;
+  --surface-3: #27150b;
   --grain-opacity: 0.035;
 }
 
@@ -68,7 +68,7 @@ body::before {
 
 /* ── Gold text gradient ─────────────────────────────────────────────────────── */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #f2ca50 0%, #d4af37 40%, #e8c547 70%, #a88820 100%);
+  background: linear-gradient(135deg, #ff7733 0%, #fc5500 40%, #ff5500 70%, #b83d00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -78,17 +78,17 @@ body::before {
 .card-premium {
   background: linear-gradient(145deg, #1c1810 0%, #16130b 100%);
   border: 1px solid rgba(212, 175, 55, 0.12);
-  box-shadow: 0 0 0 0 rgba(212,175,55,0), inset 0 1px 0 rgba(212,175,55,0.06);
+  box-shadow: 0 0 0 0 rgba(252,85,0,0), inset 0 1px 0 rgba(252,85,0,0.06);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .card-premium:hover {
-  border-color: rgba(212,175,55,0.25);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 0 rgba(212,175,55,0);
+  border-color: rgba(252,85,0,0.25);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 0 rgba(252,85,0,0);
 }
 
 /* ── Gold glow button ───────────────────────────────────────────────────────── */
 .btn-gold {
-  background: linear-gradient(135deg, #d4af37, #b8960f);
+  background: linear-gradient(135deg, #fc5500, #b83d00);
   color: #1a1200;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -107,7 +107,7 @@ body::before {
   transition: transform 0.5s ease;
 }
 .btn-gold:hover::after { transform: translateX(100%); }
-.btn-gold:hover { box-shadow: 0 0 24px rgba(212,175,55,0.35), 0 4px 12px rgba(0,0,0,0.3); }
+.btn-gold:hover { box-shadow: 0 0 24px rgba(252,85,0,0.35), 0 4px 12px rgba(0,0,0,0.3); }
 .btn-gold:active { transform: scale(0.98); }
 
 /* ── Input premium ──────────────────────────────────────────────────────────── */
@@ -130,13 +130,13 @@ body::before {
 /* ── Decorative divider ─────────────────────────────────────────────────────── */
 .divider-gold {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(252,85,0,0.3), transparent);
 }
 
 /* ── Nav active glow ────────────────────────────────────────────────────────── */
 .nav-active-glow {
   position: relative;
-  background: linear-gradient(90deg, rgba(212,175,55,0.08) 0%, transparent 100%);
+  background: linear-gradient(90deg, rgba(252,85,0,0.08) 0%, transparent 100%);
 }
 .nav-active-glow::before {
   content: '';
@@ -146,19 +146,19 @@ body::before {
   bottom: 0;
   width: 2px;
   background: linear-gradient(180deg, transparent, #d4af37, transparent);
-  box-shadow: 0 0 8px rgba(212,175,55,0.6);
+  box-shadow: 0 0 8px rgba(252,85,0,0.6);
 }
 
 /* ── Scrollbar ──────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.2); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.4); }
+::-webkit-scrollbar-thumb { background: rgba(252,85,0,0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(252,85,0,0.4); }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ── Selection ──────────────────────────────────────────────────────────────── */
-::selection { background: rgba(212,175,55,0.25); color: #f2ca50; }
+::selection { background: rgba(252,85,0,0.25); color: #f2ca50; }
 
 /* ── Animations ─────────────────────────────────────────────────────────────── */
 @keyframes fade-up {
@@ -182,8 +182,8 @@ body::before {
   100% { background-position:  200% 0; }
 }
 @keyframes gold-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
-  50%       { box-shadow: 0 0 20px 4px rgba(212,175,55,0.12); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(252,85,0,0); }
+  50%       { box-shadow: 0 0 20px 4px rgba(252,85,0,0.12); }
 }
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -220,22 +220,22 @@ input[type="number"] { -moz-appearance: textfield; }
 .react-datepicker__input-container input.datepicker-gold {
   width: 100%;
   background: var(--surface-2);
-  border: 1px solid rgba(212,175,55,0.15);
+  border: 1px solid rgba(252,85,0,0.15);
   color: #eae1d4;
   cursor: pointer;
 }
 .react-datepicker__input-container input.datepicker-gold:focus {
-  border-color: rgba(212,175,55,0.4);
+  border-color: rgba(252,85,0,0.4);
   outline: none;
 }
 .react-datepicker__input-container .react-datepicker__close-icon::after {
-  background-color: rgba(212,175,55,0.3);
+  background-color: rgba(252,85,0,0.3);
   color: #eae1d4;
   font-size: 10px;
 }
 .react-datepicker {
   background: var(--surface-2) !important;
-  border: 1px solid rgba(212,175,55,0.15) !important;
+  border: 1px solid rgba(252,85,0,0.15) !important;
   border-radius: 12px !important;
   font-family: var(--font-sans, sans-serif) !important;
   box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
@@ -243,12 +243,12 @@ input[type="number"] { -moz-appearance: textfield; }
 }
 .react-datepicker__header {
   background: var(--surface-1) !important;
-  border-bottom: 1px solid rgba(212,175,55,0.1) !important;
+  border-bottom: 1px solid rgba(252,85,0,0.1) !important;
   padding-top: 14px !important;
 }
 .react-datepicker__current-month,
 .react-datepicker__day-name {
-  color: rgba(212,175,55,0.8) !important;
+  color: rgba(252,85,0,0.8) !important;
   font-weight: 700 !important;
   text-transform: uppercase;
   font-size: 11px;
@@ -260,7 +260,7 @@ input[type="number"] { -moz-appearance: textfield; }
   transition: background 0.15s, color 0.15s;
 }
 .react-datepicker__day:hover {
-  background: rgba(212,175,55,0.15) !important;
+  background: rgba(252,85,0,0.15) !important;
   color: #eae1d4 !important;
 }
 .react-datepicker__day--selected,
@@ -272,7 +272,7 @@ input[type="number"] { -moz-appearance: textfield; }
 .react-datepicker__day--outside-month { opacity: 0.25 !important; }
 .react-datepicker__day--disabled { opacity: 0.2 !important; cursor: not-allowed !important; }
 .react-datepicker__navigation-icon::before {
-  border-color: rgba(212,175,55,0.6) !important;
+  border-color: rgba(252,85,0,0.6) !important;
 }
 .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
   border-color: var(--gold) !important;

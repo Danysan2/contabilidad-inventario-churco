@@ -11,12 +11,14 @@ type FixedExpense = { id: string; name: string; amount: number; categorySlug: st
 
 type DraftItem = { productId: string; quantity: string; unitCost: string };
 
-function PurchaseModal({ products, onSave, onClose }: {
+function PurchaseModal({ products, onSave, onClose, defaultBranchSlug }: {
   products: Product[];
   onSave: () => void;
   onClose: () => void;
+  defaultBranchSlug: string;
 }) {
   const [note, setNote] = useState("");
+  const [branchSlug, setBranchSlug] = useState(defaultBranchSlug);
   const [items, setItems] = useState<DraftItem[]>([{ productId: "", quantity: "", unitCost: "" }]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -46,7 +48,7 @@ function PurchaseModal({ products, onSave, onClose }: {
       const res = await fetch("/api/egresos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ note: note || undefined, items: valid }),
+        body: JSON.stringify({ note: note || undefined, items: valid, branchId: branchSlug }),
       });
       if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? "Error al guardar"); }
       onSave();
@@ -58,17 +60,31 @@ function PurchaseModal({ products, onSave, onClose }: {
     }
   }
 
-  const labelStyle = { color: "rgba(212,175,55,0.6)" };
+  const labelStyle = { color: "rgba(252,85,0,0.6)" };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 pb-24 md:pb-4">
       <div className="card-premium rounded-xl w-full max-w-2xl animate-slide-up shadow-2xl max-h-[90vh] flex flex-col">
-        <div className="p-lg flex items-center justify-between" style={{ borderBottom: "1px solid rgba(212,175,55,0.1)" }}>
+        <div className="p-lg flex items-center justify-between" style={{ borderBottom: "1px solid rgba(252,85,0,0.1)" }}>
           <h3 className="font-display text-xl font-semibold" style={{ color: "#eae1d4" }}>Registrar Compra</h3>
           <button onClick={onClose} style={{ color: "rgba(234,225,212,0.4)" }}><span className="material-symbols-outlined">close</span></button>
         </div>
 
         <div className="p-lg overflow-y-auto flex-1 flex flex-col gap-md">
+          {/* Branch */}
+          <div className="flex flex-col gap-1">
+            <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>Sucursal</label>
+            <select
+              value={branchSlug}
+              onChange={(e) => setBranchSlug(e.target.value)}
+              className="input-premium"
+              style={{ background: "var(--surface-2)", color: "#eae1d4", colorScheme: "dark" }}
+            >
+              <option value="churco" style={{ background: "#1a1610", color: "#eae1d4" }}>Sucursal Churco</option>
+              <option value="suc2" style={{ background: "#1a1610", color: "#eae1d4" }}>Sucursal 2</option>
+            </select>
+          </div>
+
           {/* Note */}
           <div className="flex flex-col gap-1">
             <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>Nota (opcional)</label>
@@ -83,7 +99,7 @@ function PurchaseModal({ products, onSave, onClose }: {
             <div className="flex flex-col gap-sm">
               {items.map((row, i) => (
                 <div key={i} className="grid grid-cols-1 md:grid-cols-[2fr_80px_120px_80px_36px] gap-sm items-center"
-                  style={{ paddingBottom: 8, borderBottom: "1px solid rgba(212,175,55,0.06)" }}>
+                  style={{ paddingBottom: 8, borderBottom: "1px solid rgba(252,85,0,0.06)" }}>
                   <select
                     value={row.productId}
                     onChange={(e) => {
@@ -132,14 +148,14 @@ function PurchaseModal({ products, onSave, onClose }: {
               ))}
             </div>
             <button onClick={addRow} className="mt-3 flex items-center gap-1 font-sans text-xs font-bold uppercase tracking-wider transition-colors"
-              style={{ color: "rgba(212,175,55,0.7)" }}>
+              style={{ color: "rgba(252,85,0,0.7)" }}>
               <span className="material-symbols-outlined icon-sm">add_circle</span>
               Agregar producto
             </button>
           </div>
 
           {/* Total */}
-          <div className="flex justify-between items-center pt-2" style={{ borderTop: "1px solid rgba(212,175,55,0.1)" }}>
+          <div className="flex justify-between items-center pt-2" style={{ borderTop: "1px solid rgba(252,85,0,0.1)" }}>
             <span className="font-sans text-[10px] uppercase tracking-widest" style={labelStyle}>Total compra</span>
             <span className="font-display text-2xl font-bold text-gold-gradient">${total.toLocaleString("es-CO")}</span>
           </div>
@@ -151,9 +167,9 @@ function PurchaseModal({ products, onSave, onClose }: {
           )}
         </div>
 
-        <div className="p-lg flex gap-sm" style={{ borderTop: "1px solid rgba(212,175,55,0.1)" }}>
+        <div className="p-lg flex gap-sm" style={{ borderTop: "1px solid rgba(252,85,0,0.1)" }}>
           <button onClick={onClose} className="flex-1 py-3 rounded font-sans text-xs font-bold uppercase tracking-wider"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(212,175,55,0.1)", color: "rgba(234,225,212,0.5)" }}>
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(252,85,0,0.1)", color: "rgba(234,225,212,0.5)" }}>
             Cancelar
           </button>
           <button onClick={handleSave} disabled={saving}
@@ -169,7 +185,7 @@ function PurchaseModal({ products, onSave, onClose }: {
 }
 
 function FixedExpenseModal({ expense, onSave, onClose }: {
-  expense?: Partial<FixedExpense>;
+  expense?: Partial<FixedExpense & { branchSlug?: string }>;
   onSave: () => void;
   onClose: () => void;
 }) {
@@ -177,16 +193,17 @@ function FixedExpenseModal({ expense, onSave, onClose }: {
   const [amount, setAmount] = useState(expense?.amount ? String(expense.amount) : "");
   const [categorySlug, setCategorySlug] = useState(expense?.categorySlug ?? "");
   const [description, setDescription] = useState(expense?.description ?? "");
+  const [branchSlug, setBranchSlug] = useState(expense?.branchSlug ?? "churco");
   const [saving, setSaving] = useState(false);
 
-  const labelStyle = { color: "rgba(212,175,55,0.6)" };
+  const labelStyle = { color: "rgba(252,85,0,0.6)" };
 
   async function handleSave() {
     setSaving(true);
     try {
       const url = expense?.id ? `/api/gastos-fijos/${expense.id}` : "/api/gastos-fijos";
       const method = expense?.id ? "PUT" : "POST";
-      await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, amount: parseFloat(amount) || 0, categorySlug, description }) });
+      await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, amount: parseFloat(amount) || 0, categorySlug, description, branchId: branchSlug }) });
       onSave(); onClose();
     } finally { setSaving(false); }
   }
@@ -194,7 +211,7 @@ function FixedExpenseModal({ expense, onSave, onClose }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="card-premium rounded-xl w-full max-w-sm animate-scale-in shadow-2xl">
-        <div className="p-lg flex items-center justify-between" style={{ borderBottom: "1px solid rgba(212,175,55,0.1)" }}>
+        <div className="p-lg flex items-center justify-between" style={{ borderBottom: "1px solid rgba(252,85,0,0.1)" }}>
           <h3 className="font-display text-lg font-semibold" style={{ color: "#eae1d4" }}>{expense?.id ? "Editar" : "Nuevo"} Gasto Fijo</h3>
           <button onClick={onClose} style={{ color: "rgba(234,225,212,0.4)" }}><span className="material-symbols-outlined">close</span></button>
         </div>
@@ -222,13 +239,25 @@ function FixedExpenseModal({ expense, onSave, onClose }: {
             </select>
           </div>
           <div className="flex flex-col gap-1">
+            <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>Sucursal</label>
+            <select
+              value={branchSlug}
+              onChange={(e) => setBranchSlug(e.target.value)}
+              className="input-premium"
+              style={{ background: "var(--surface-2)", color: "#eae1d4", colorScheme: "dark" }}
+            >
+              <option value="churco" style={{ background: "#1a1610", color: "#eae1d4" }}>Sucursal Churco</option>
+              <option value="suc2" style={{ background: "#1a1610", color: "#eae1d4" }}>Sucursal 2</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
             <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>Descripción</label>
             <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Opcional" className="input-premium" />
           </div>
         </div>
-        <div className="p-lg flex gap-sm" style={{ borderTop: "1px solid rgba(212,175,55,0.1)" }}>
+        <div className="p-lg flex gap-sm" style={{ borderTop: "1px solid rgba(252,85,0,0.1)" }}>
           <button onClick={onClose} className="flex-1 py-2.5 rounded font-sans text-xs font-bold uppercase tracking-wider"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(212,175,55,0.1)", color: "rgba(234,225,212,0.5)" }}>
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(252,85,0,0.1)", color: "rgba(234,225,212,0.5)" }}>
             Cancelar
           </button>
           <button onClick={handleSave} disabled={saving || !name || !(parseFloat(amount) > 0)}
@@ -320,21 +349,21 @@ export default function EgresosPage() {
       {/* Summary chips */}
       <div className="flex gap-sm mb-lg">
         <div className="card-premium rounded-lg px-4 py-3 text-center flex-1">
-          <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(212,175,55,0.55)" }}>Compras registradas</div>
+          <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(252,85,0,0.55)" }}>Compras registradas</div>
           <div className="font-display text-xl font-bold" style={{ color: "#eae1d4" }}>{purchases.length}</div>
         </div>
         <div className="card-premium rounded-lg px-4 py-3 text-center flex-1">
-          <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(212,175,55,0.55)" }}>Total invertido</div>
+          <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(252,85,0,0.55)" }}>Total invertido</div>
           <div className="font-display text-xl font-bold text-gold-gradient">${totalPurchases.toLocaleString("es-CO")}</div>
         </div>
         <div className="card-premium rounded-lg px-4 py-3 text-center flex-1">
-          <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(212,175,55,0.55)" }}>Gastos fijos / mes</div>
+          <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(252,85,0,0.55)" }}>Gastos fijos / mes</div>
           <div className="font-display text-xl font-bold" style={{ color: "#eae1d4" }}>${totalMonthlyFixed.toLocaleString("es-CO")}</div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-lg mb-lg" style={{ borderBottom: "1px solid rgba(212,175,55,0.08)" }}>
+      <div className="flex gap-lg mb-lg" style={{ borderBottom: "1px solid rgba(252,85,0,0.08)" }}>
         {[["compras", "Historial de Compras"], ["gastos", "Gastos Fijos"]].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key as "compras" | "gastos")}
             className="font-sans text-sm font-bold uppercase tracking-wider pb-2 transition-colors"
@@ -348,12 +377,12 @@ export default function EgresosPage() {
       {tab === "compras" && (
         <div className="card-premium rounded-lg overflow-hidden">
           <div className="hidden md:grid grid-cols-[140px_1fr_1fr_120px_60px] gap-md p-md font-sans text-[10px] font-bold uppercase tracking-wider"
-            style={{ borderBottom: "1px solid rgba(212,175,55,0.08)", color: "rgba(212,175,55,0.5)" }}>
+            style={{ borderBottom: "1px solid rgba(252,85,0,0.08)", color: "rgba(252,85,0,0.5)" }}>
             <span>Fecha</span><span>Productos</span><span>Nota</span><span className="text-right">Total</span><span />
           </div>
           {loading ? (
             [...Array(5)].map((_, i) => (
-              <div key={i} className="p-md animate-pulse" style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}>
+              <div key={i} className="p-md animate-pulse" style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}>
                 <div className="h-8 rounded" style={{ background: "var(--surface-3)" }} />
               </div>
             ))
@@ -367,8 +396,8 @@ export default function EgresosPage() {
               const total = p.items.reduce((s, i) => s + i.quantity * Number(i.unitCost), 0);
               return (
                 <div key={p.id} className="grid grid-cols-1 md:grid-cols-[140px_1fr_1fr_120px_60px] gap-sm p-md items-start transition-colors"
-                  style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(212,175,55,0.03)")}
+                  style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(252,85,0,0.03)")}
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
                 >
                   <div className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.5)" }}>
@@ -410,7 +439,7 @@ export default function EgresosPage() {
 
           <div className="card-premium rounded-lg overflow-hidden">
             <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_80px] gap-md p-md font-sans text-[10px] font-bold uppercase tracking-wider"
-              style={{ borderBottom: "1px solid rgba(212,175,55,0.08)", color: "rgba(212,175,55,0.5)" }}>
+              style={{ borderBottom: "1px solid rgba(252,85,0,0.08)", color: "rgba(252,85,0,0.5)" }}>
               <span>Nombre</span><span>Categoría</span><span className="text-right">Monto/mes</span><span />
             </div>
 
@@ -422,8 +451,8 @@ export default function EgresosPage() {
             ) : (
               fixedExpenses.map((e) => (
                 <div key={e.id} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_80px] gap-sm p-md items-center transition-colors"
-                  style={{ borderBottom: "1px solid rgba(212,175,55,0.06)", opacity: e.active ? 1 : 0.4 }}
-                  onMouseEnter={(el) => ((el.currentTarget as HTMLElement).style.background = "rgba(212,175,55,0.03)")}
+                  style={{ borderBottom: "1px solid rgba(252,85,0,0.06)", opacity: e.active ? 1 : 0.4 }}
+                  onMouseEnter={(el) => ((el.currentTarget as HTMLElement).style.background = "rgba(252,85,0,0.03)")}
                   onMouseLeave={(el) => ((el.currentTarget as HTMLElement).style.background = "transparent")}
                 >
                   <div>
@@ -432,7 +461,7 @@ export default function EgresosPage() {
                   </div>
                   <div>
                     <span className="font-sans text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
-                      style={{ background: "rgba(212,175,55,0.08)", color: "rgba(212,175,55,0.6)" }}>
+                      style={{ background: "rgba(252,85,0,0.08)", color: "rgba(252,85,0,0.6)" }}>
                       {e.categorySlug ?? "General"}
                     </span>
                   </div>
@@ -462,8 +491,8 @@ export default function EgresosPage() {
             )}
 
             {fixedExpenses.length > 0 && (
-              <div className="flex justify-between items-center p-md" style={{ borderTop: "1px solid rgba(212,175,55,0.1)" }}>
-                <span className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>Total mensual</span>
+              <div className="flex justify-between items-center p-md" style={{ borderTop: "1px solid rgba(252,85,0,0.1)" }}>
+                <span className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>Total mensual</span>
                 <span className="font-display text-xl font-bold text-gold-gradient">${totalMonthlyFixed.toLocaleString("es-CO")}</span>
               </div>
             )}
@@ -473,7 +502,7 @@ export default function EgresosPage() {
 
       {/* Modals */}
       {showPurchaseModal && (
-        <PurchaseModal products={products} onSave={fetchAll} onClose={() => setShowPurchaseModal(false)} />
+        <PurchaseModal products={products} onSave={fetchAll} onClose={() => setShowPurchaseModal(false)} defaultBranchSlug="churco" />
       )}
       {editExpense !== null && (
         <FixedExpenseModal expense={editExpense} onSave={fetchAll} onClose={() => setEditExpense(null)} />
@@ -488,7 +517,7 @@ export default function EgresosPage() {
             <p className="font-sans text-sm mb-lg" style={{ color: "rgba(234,225,212,0.5)" }}>Esta acción no se puede deshacer.</p>
             <div className="flex gap-sm">
               <button onClick={() => setDeleteExpenseId(null)} className="flex-1 py-2.5 rounded font-sans text-xs font-bold uppercase tracking-wider"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(212,175,55,0.1)", color: "rgba(234,225,212,0.5)" }}>
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(252,85,0,0.1)", color: "rgba(234,225,212,0.5)" }}>
                 Cancelar
               </button>
               <button onClick={() => handleDeleteExpense(deleteExpenseId)}

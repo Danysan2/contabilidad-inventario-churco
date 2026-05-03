@@ -4,7 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, ComposedChart, Line, Area,
+  Legend,
 } from "recharts";
 
 type DashboardData = {
@@ -25,9 +27,12 @@ type DashboardData = {
     total: number;
     createdAt: string;
     employee: { name: string };
+    branch?: { name: string };
     items: { product: { name: string }; quantity: number }[];
   }[];
   dailyTotals: { date: string; total: number }[];
+  dailyExpenses: { date: string; total: number }[];
+  branchRevenue: { branchId: string; name: string; revenue: number }[];
 };
 
 type Period = "day" | "week" | "month";
@@ -39,18 +44,10 @@ function MetricCard({ label, value, change, icon, prefix = "" }: {
   return (
     <div className="card-premium rounded-xl p-lg flex flex-col gap-sm animate-fade-in">
       <div className="flex items-center justify-between">
-        <span
-          className="font-sans text-[10px] font-bold uppercase tracking-[0.12em]"
-          style={{ color: "rgba(212,175,55,0.6)" }}
-        >
+        <span className="font-sans text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: "rgba(212,175,55,0.6)" }}>
           {label}
         </span>
-        <span
-          className="material-symbols-outlined icon-fill"
-          style={{ color: "var(--gold)", fontSize: 20, opacity: 0.7 }}
-        >
-          {icon}
-        </span>
+        <span className="material-symbols-outlined icon-fill" style={{ color: "var(--gold)", fontSize: 20, opacity: 0.7 }}>{icon}</span>
       </div>
       <div className="font-display text-3xl font-bold" style={{ color: "#eae1d4" }}>
         {prefix}{typeof value === "number" ? value.toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : value}
@@ -63,17 +60,16 @@ function MetricCard({ label, value, change, icon, prefix = "" }: {
   );
 }
 
-const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) => {
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) => {
   if (active && payload && payload.length) {
     return (
-      <div
-        className="px-3 py-2 rounded-lg shadow-xl"
-        style={{ background: "var(--surface-2)", border: "1px solid rgba(212,175,55,0.2)" }}
-      >
-        <p className="font-sans text-[10px] uppercase tracking-wider" style={{ color: "rgba(212,175,55,0.6)" }}>{label}</p>
-        <p className="font-display font-bold" style={{ color: "var(--gold-light)" }}>
-          ${Number(payload[0].value).toLocaleString("es-MX")}
-        </p>
+      <div className="px-3 py-2 rounded-lg shadow-xl" style={{ background: "var(--surface-2)", border: "1px solid rgba(212,175,55,0.2)" }}>
+        <p className="font-sans text-[10px] uppercase tracking-wider mb-1" style={{ color: "rgba(212,175,55,0.6)" }}>{label}</p>
+        {payload.map((p, i) => (
+          <p key={i} className="font-display font-bold text-sm" style={{ color: p.color }}>
+            {p.name}: ${Number(p.value).toLocaleString("es-MX")}
+          </p>
+        ))}
       </div>
     );
   }
@@ -85,6 +81,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [period, setPeriod] = useState<Period>("week");
+  const [branchFilter, setBranchFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
 
   const isAdmin = session?.user?.role === "ADMIN";
@@ -92,12 +89,14 @@ export default function DashboardPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/dashboard?period=${period}`);
+      const params = new URLSearchParams({ period });
+      if (branchFilter !== "all") params.set("branchId", branchFilter);
+      const res = await fetch(`/api/dashboard?${params}`);
       if (res.ok) setData(await res.json());
     } finally {
       setLoading(false);
     }
-  }, [period]);
+  }, [period, branchFilter]);
 
   useEffect(() => {
     if (!isAdmin) { router.push("/pos"); return; }
@@ -106,12 +105,20 @@ export default function DashboardPage() {
 
   if (!isAdmin) return null;
 
-  const chartData = data?.dailyTotals.map((d) => ({
-    date: period === "day"
+  // Merge daily totals + expenses into one chart dataset
+  const expenseMap = new Map((data?.dailyExpenses ?? []).map((d) => {
+    const key = period === "day"
       ? new Date(d.date).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })
-      : new Date(d.date).toLocaleDateString("es-MX", { day: "2-digit", month: "short" }),
-    total: Number(d.total),
-  })) ?? [];
+      : new Date(d.date).toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
+    return [key, Number(d.total)];
+  }));
+
+  const chartData = (data?.dailyTotals ?? []).map((d) => {
+    const label = period === "day"
+      ? new Date(d.date).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })
+      : new Date(d.date).toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
+    return { date: label, ingresos: Number(d.total), egresos: expenseMap.get(label) ?? 0 };
+  });
 
   const chartTitle = period === "day" ? "Ingresos de Hoy" : period === "week" ? "Ingresos Semanales" : "Ingresos del Mes";
 
@@ -125,25 +132,39 @@ export default function DashboardPage() {
             Resumen financiero y métricas de la barbería.
           </p>
         </div>
-        {/* Period selector */}
-        <div
-          className="flex items-center gap-1 p-1 rounded-lg"
-          style={{ background: "var(--surface-2)", border: "1px solid rgba(212,175,55,0.1)" }}
-        >
-          {(["day", "week", "month"] as Period[]).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className="px-4 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider transition-all"
-              style={
-                period === p
-                  ? { background: "var(--gold)", color: "#1a1200" }
-                  : { color: "rgba(234,225,212,0.45)" }
-              }
-            >
-              {p === "day" ? "Hoy" : p === "week" ? "Semana" : "Mes"}
-            </button>
-          ))}
+        <div className="flex items-center gap-sm flex-wrap">
+          {/* Branch selector */}
+          <select
+            value={branchFilter}
+            onChange={(e) => setBranchFilter(e.target.value)}
+            className="px-3 py-2 rounded font-sans text-sm outline-none"
+            style={{ background: "var(--surface-2)", border: "1px solid rgba(212,175,55,0.15)", color: "#eae1d4" }}
+          >
+            <option value="all">Todas las sucursales</option>
+            <option value="churco">Sucursal Churco</option>
+            <option value="suc2">Sucursal 2</option>
+          </select>
+
+          {/* Period selector */}
+          <div
+            className="flex items-center gap-1 p-1 rounded-lg"
+            style={{ background: "var(--surface-2)", border: "1px solid rgba(212,175,55,0.1)" }}
+          >
+            {(["day", "week", "month"] as Period[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className="px-4 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider transition-all"
+                style={
+                  period === p
+                    ? { background: "var(--gold)", color: "#1a0800" }
+                    : { color: "rgba(234,225,212,0.45)" }
+                }
+              >
+                {p === "day" ? "Hoy" : p === "week" ? "Semana" : "Mes"}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -184,7 +205,7 @@ export default function DashboardPage() {
                 <span className="font-sans text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: "rgba(212,175,55,0.6)" }}>MARGEN NETO</span>
                 <span className="material-symbols-outlined icon-fill" style={{ color: "var(--gold)", fontSize: 20, opacity: 0.7 }}>account_balance</span>
               </div>
-              <div className={`font-display text-3xl font-bold`} style={{ color: (data?.netMargin ?? 0) >= 0 ? "#eae1d4" : "#f87171" }}>
+              <div className="font-display text-3xl font-bold" style={{ color: (data?.netMargin ?? 0) >= 0 ? "#eae1d4" : "#f87171" }}>
                 ${(data?.netMargin ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </div>
               <div className="flex items-center gap-2">
@@ -196,8 +217,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Charts row */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-md mb-xl">
+          {/* Charts row 1 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-md mb-md">
             {/* Category revenue bar chart */}
             <div className="card-premium rounded-xl p-lg">
               <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Por Categoría</h3>
@@ -211,7 +232,7 @@ export default function DashboardPage() {
                         <p className="font-display font-bold" style={{ color: "var(--gold-light)" }}>${Number(payload[0].value).toLocaleString("es-MX")}</p>
                       </div>
                     ) : null} />
-                    <Bar dataKey="revenue" fill="#d4af37" radius={3} />
+                    <Bar dataKey="revenue" fill="#fc5500" radius={3} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -219,24 +240,26 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Area chart */}
+            {/* Main chart: ingresos + egresos combined */}
             <div className="lg:col-span-2 card-premium rounded-xl p-lg">
               <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>{chartTitle}</h3>
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={220}>
-                  <AreaChart data={chartData}>
+                  <ComposedChart data={chartData}>
                     <defs>
-                      <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#d4af37" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#d4af37" stopOpacity={0} />
+                      <linearGradient id="ingresosGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#fc5500" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#fc5500" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#4d4635" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#3d1a0a" />
                     <XAxis dataKey="date" tick={{ fill: "#d0c5af", fontSize: 11 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: "#d0c5af", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="total" stroke="#d4af37" strokeWidth={2} fill="url(#goldGrad)" />
-                  </AreaChart>
+                    <Legend wrapperStyle={{ fontSize: 11, color: "#d0c5af" }} />
+                    <Area type="monotone" dataKey="ingresos" name="Ingresos" stroke="#fc5500" strokeWidth={2} fill="url(#ingresosGrad)" />
+                    <Line type="monotone" dataKey="egresos" name="Egresos" stroke="#8b3a00" strokeWidth={2} dot={false} strokeDasharray="4 2" />
+                  </ComposedChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="h-[220px] flex items-center justify-center text-on-surface-variant font-sans text-sm">
@@ -244,7 +267,33 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+          </div>
 
+          {/* Branch revenue chart */}
+          <div className="card-premium rounded-xl p-lg mb-xl">
+            <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Ingresos por Sucursal</h3>
+            {data?.branchRevenue?.length ? (
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={data.branchRevenue}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#3d1a0a" />
+                  <XAxis dataKey="name" tick={{ fill: "#d0c5af", fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#d0c5af", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
+                  <Tooltip content={({ active, payload }) => active && payload?.length ? (
+                    <div className="px-3 py-2 rounded-lg shadow-xl" style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.2)" }}>
+                      <p className="font-sans text-xs mb-1" style={{ color: "rgba(234,225,212,0.5)" }}>{(payload[0].payload as { name: string }).name}</p>
+                      <p className="font-display font-bold" style={{ color: "#fc5500" }}>${Number(payload[0].value).toLocaleString("es-MX")}</p>
+                    </div>
+                  ) : null} />
+                  <Bar dataKey="revenue" name="Ingresos" radius={4}>
+                    {data.branchRevenue.map((entry, index) => (
+                      <rect key={index} fill={index === 0 ? "#fc5500" : "#b83d00"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[180px] flex items-center justify-center text-on-surface-variant font-sans text-sm">Sin datos de sucursales</div>
+            )}
           </div>
 
           {/* Low stock, top products & recent sales */}
@@ -291,7 +340,7 @@ export default function DashboardPage() {
                         {payload[0].value} unidades
                       </div>
                     ) : null} />
-                    <Bar dataKey="quantity" fill="#d4af37" radius={2} />
+                    <Bar dataKey="quantity" fill="#fc5500" radius={2} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -312,7 +361,9 @@ export default function DashboardPage() {
                           {s.items.reduce((a, b) => a + b.quantity, 0) > 2 ? "..." : ""}
                         </div>
                         <div className="text-on-surface-variant text-xs">
-                          {s.employee.name} · {new Date(s.createdAt).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          {s.employee.name}
+                          {s.branch ? ` · ${s.branch.name}` : ""}
+                          {" · "}{new Date(s.createdAt).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                         </div>
                       </div>
                       <span className="text-primary font-serif font-bold">

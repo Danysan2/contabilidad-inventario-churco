@@ -13,6 +13,7 @@ type Sale = {
   createdAt: string;
   syncedToSheets: boolean;
   employee: { id: string; name: string };
+  branch?: { id: string; name: string; slug: string };
   items: SaleItem[];
 };
 
@@ -35,7 +36,7 @@ function SaleDetailModal({ sale, onClose, onDelete, isAdmin }: {
       <div className="card-premium rounded-xl w-full max-w-md animate-slide-up shadow-2xl max-h-[85vh] flex flex-col">
         <div
           className="p-lg flex items-center justify-between"
-          style={{ borderBottom: "1px solid rgba(212,175,55,0.1)" }}
+          style={{ borderBottom: "1px solid rgba(252,85,0,0.1)" }}
         >
           <div>
             <h3 className="font-display text-xl font-semibold" style={{ color: "#eae1d4" }}>Detalle de Venta</h3>
@@ -52,9 +53,9 @@ function SaleDetailModal({ sale, onClose, onDelete, isAdmin }: {
           {/* Employee */}
           <div
             className="flex items-center gap-sm mb-lg pb-lg"
-            style={{ borderBottom: "1px solid rgba(212,175,55,0.08)" }}
+            style={{ borderBottom: "1px solid rgba(252,85,0,0.08)" }}
           >
-            <span className="material-symbols-outlined icon-fill" style={{ color: "rgba(212,175,55,0.5)" }}>person</span>
+            <span className="material-symbols-outlined icon-fill" style={{ color: "rgba(252,85,0,0.5)" }}>person</span>
             <div>
               <div className="font-sans text-sm font-semibold" style={{ color: "#eae1d4" }}>{sale.employee.name}</div>
               <div className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.4)" }}>Empleado registrador</div>
@@ -73,7 +74,7 @@ function SaleDetailModal({ sale, onClose, onDelete, isAdmin }: {
               <div
                 key={i}
                 className="flex justify-between items-center py-2"
-                style={{ borderBottom: "1px solid rgba(212,175,55,0.07)" }}
+                style={{ borderBottom: "1px solid rgba(252,85,0,0.07)" }}
               >
                 <div>
                   <div className="font-sans text-sm" style={{ color: "#eae1d4" }}>{item.product.name}</div>
@@ -91,28 +92,28 @@ function SaleDetailModal({ sale, onClose, onDelete, isAdmin }: {
           {sale.note && (
             <div
               className="rounded px-3 py-2 mb-lg"
-              style={{ background: "rgba(212,175,55,0.05)", border: "1px solid rgba(212,175,55,0.12)" }}
+              style={{ background: "rgba(252,85,0,0.05)", border: "1px solid rgba(252,85,0,0.12)" }}
             >
-              <span className="font-sans text-[10px] uppercase tracking-widest block mb-1" style={{ color: "rgba(212,175,55,0.6)" }}>Nota</span>
+              <span className="font-sans text-[10px] uppercase tracking-widest block mb-1" style={{ color: "rgba(252,85,0,0.6)" }}>Nota</span>
               <span className="font-sans text-sm" style={{ color: "#eae1d4" }}>{sale.note}</span>
             </div>
           )}
 
           {/* Total */}
           <div className="flex justify-between items-center pt-2">
-            <span className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>Total</span>
+            <span className="font-sans text-[10px] uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>Total</span>
             <span className="font-display text-2xl font-bold text-gold-gradient">${Number(sale.total).toLocaleString("es-MX")}</span>
           </div>
         </div>
 
         {isAdmin && (
-          <div className="p-lg" style={{ borderTop: "1px solid rgba(212,175,55,0.1)" }}>
+          <div className="p-lg" style={{ borderTop: "1px solid rgba(252,85,0,0.1)" }}>
             {confirmDelete ? (
               <div className="flex gap-sm">
                 <button
                   onClick={() => setConfirmDelete(false)}
                   className="flex-1 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(212,175,55,0.1)", color: "rgba(234,225,212,0.5)" }}
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(252,85,0,0.1)", color: "rgba(234,225,212,0.5)" }}
                 >
                   Cancelar
                 </button>
@@ -157,6 +158,7 @@ export default function MovementsPage() {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
+  const [branchFilter, setBranchFilter] = useState<string>("all");
   const limit = 20;
 
   const isAdmin = session?.user?.role === "ADMIN";
@@ -167,6 +169,7 @@ export default function MovementsPage() {
       const params = new URLSearchParams({ page: String(page), limit: String(limit) });
       if (dateFrom) params.set("from", dateFrom.toISOString());
       if (dateTo) params.set("to", dateTo.toISOString());
+      if (isAdmin && branchFilter !== "all") params.set("branchId", branchFilter);
       const res = await fetch(`/api/sales?${params}`);
       if (res.ok) {
         const data = await res.json();
@@ -176,7 +179,7 @@ export default function MovementsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, dateFrom, dateTo]);
+  }, [page, dateFrom, dateTo, isAdmin, branchFilter]);
 
   useEffect(() => { fetchSales(); }, [fetchSales]);
 
@@ -204,16 +207,35 @@ export default function MovementsPage() {
             <div
               className="card-premium rounded-lg px-4 py-2 text-center"
             >
-              <div className="font-sans text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.55)" }}>Ventas</div>
+              <div className="font-sans text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.55)" }}>Ventas</div>
               <div className="font-display text-xl font-bold" style={{ color: "#eae1d4" }}>{total}</div>
             </div>
             <div className="card-premium rounded-lg px-4 py-2 text-center">
-              <div className="font-sans text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.55)" }}>Total mostrado</div>
+              <div className="font-sans text-[9px] font-bold uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.55)" }}>Total mostrado</div>
               <div className="font-display text-xl font-bold text-gold-gradient">${totalRevenue.toLocaleString("es-MX")}</div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Branch filter (admin only) */}
+      {isAdmin && (
+        <div className="flex items-center gap-sm mb-sm">
+          <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>
+            Sucursal
+          </label>
+          <select
+            value={branchFilter}
+            onChange={(e) => { setBranchFilter(e.target.value); setPage(1); }}
+            className="px-3 py-2 rounded font-sans text-sm outline-none"
+            style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.15)", color: "#eae1d4" }}
+          >
+            <option value="all">Todas las sucursales</option>
+            <option value="churco">Sucursal Churco</option>
+            <option value="suc2">Sucursal 2</option>
+          </select>
+        </div>
+      )}
 
       {/* Date filters */}
       <div className="flex flex-col sm:flex-row gap-sm mb-lg items-end">
@@ -222,7 +244,7 @@ export default function MovementsPage() {
           { label: "Hasta", value: dateTo, onChange: (d: Date | null) => { setDateTo(d); setPage(1); }, minDate: dateFrom ?? undefined },
         ] as const).map(({ label, value, onChange, ...rest }) => (
           <div key={label} className="flex flex-col gap-1">
-            <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
+            <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>
               {label}
             </label>
             <DatePicker
@@ -245,7 +267,7 @@ export default function MovementsPage() {
               className="px-4 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
               style={{
                 color: "rgba(234,225,212,0.45)",
-                border: "1px solid rgba(212,175,55,0.1)",
+                border: "1px solid rgba(252,85,0,0.1)",
               }}
               onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#eae1d4")}
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(234,225,212,0.45)")}
@@ -261,7 +283,7 @@ export default function MovementsPage() {
         {/* Table header (desktop) */}
         <div
           className="hidden md:grid grid-cols-[1fr_2fr_1fr_1fr_80px] gap-md p-md font-sans text-[10px] font-bold uppercase tracking-wider"
-          style={{ borderBottom: "1px solid rgba(212,175,55,0.08)", color: "rgba(212,175,55,0.5)" }}
+          style={{ borderBottom: "1px solid rgba(252,85,0,0.08)", color: "rgba(252,85,0,0.5)" }}
         >
           <div>Fecha y Hora</div>
           <div>Productos</div>
@@ -272,7 +294,7 @@ export default function MovementsPage() {
 
         {loading ? (
           [...Array(8)].map((_, i) => (
-            <div key={i} className="p-md animate-pulse" style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}>
+            <div key={i} className="p-md animate-pulse" style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}>
               <div className="h-8 rounded w-full" style={{ background: "var(--surface-3)" }} />
             </div>
           ))
@@ -287,8 +309,8 @@ export default function MovementsPage() {
               key={sale.id}
               onClick={() => setSelectedSale(sale)}
               className="w-full grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr_1fr_80px] gap-y-1 gap-x-md p-md items-center transition-colors text-left group"
-              style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(212,175,55,0.03)")}
+              style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(252,85,0,0.03)")}
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
             >
               {/* Date */}
@@ -308,7 +330,7 @@ export default function MovementsPage() {
 
               {/* Total */}
               <div className="flex justify-between md:block text-right">
-                <span className="md:hidden font-sans text-[10px] uppercase tracking-wider" style={{ color: "rgba(212,175,55,0.55)" }}>Total:</span>
+                <span className="md:hidden font-sans text-[10px] uppercase tracking-wider" style={{ color: "rgba(252,85,0,0.55)" }}>Total:</span>
                 <span className="font-display font-bold" style={{ color: "var(--gold-light)" }}>${Number(sale.total).toLocaleString("es-MX")}</span>
               </div>
 
@@ -333,7 +355,7 @@ export default function MovementsPage() {
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
             className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-30"
-            style={{ border: "1px solid rgba(212,175,55,0.15)", color: "rgba(234,225,212,0.45)" }}
+            style={{ border: "1px solid rgba(252,85,0,0.15)", color: "rgba(234,225,212,0.45)" }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_left</span>
           </button>
@@ -344,7 +366,7 @@ export default function MovementsPage() {
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
             className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-30"
-            style={{ border: "1px solid rgba(212,175,55,0.15)", color: "rgba(234,225,212,0.45)" }}
+            style={{ border: "1px solid rgba(252,85,0,0.15)", color: "rgba(234,225,212,0.45)" }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: 18 }}>chevron_right</span>
           </button>

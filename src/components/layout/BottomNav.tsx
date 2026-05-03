@@ -26,7 +26,7 @@ export default function BottomNav() {
       className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-2 md:hidden"
       style={{
         background: "rgba(13,11,6,0.92)",
-        borderTop: "1px solid rgba(212,175,55,0.1)",
+        borderTop: "1px solid rgba(252,85,0,0.1)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
       }}
@@ -49,7 +49,7 @@ export default function BottomNav() {
                 className="absolute -top-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
                 style={{
                   background: "var(--gold)",
-                  boxShadow: "0 0 6px 2px rgba(212,175,55,0.5)",
+                  boxShadow: "0 0 6px 2px rgba(252,85,0,0.5)",
                 }}
               />
             )}

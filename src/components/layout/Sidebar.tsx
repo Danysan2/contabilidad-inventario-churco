@@ -26,19 +26,19 @@ export default function Sidebar() {
       className="w-64 hidden md:flex flex-col h-full overflow-y-auto"
       style={{
         background: "linear-gradient(180deg, var(--surface-1) 0%, var(--surface-0) 100%)",
-        borderRight: "1px solid rgba(212,175,55,0.08)",
+        borderRight: "1px solid rgba(252,85,0,0.08)",
       }}
     >
       {/* User info */}
       <div
         className="px-5 py-4 flex items-center gap-3"
-        style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}
+        style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}
       >
         <div
           className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold font-display"
           style={{
-            background: "rgba(212,175,55,0.12)",
-            border: "1px solid rgba(212,175,55,0.2)",
+            background: "rgba(252,85,0,0.12)",
+            border: "1px solid rgba(252,85,0,0.2)",
             color: "var(--gold)",
           }}
         >
@@ -53,7 +53,7 @@ export default function Sidebar() {
           </p>
           <p
             className="font-sans text-[10px] uppercase tracking-widest truncate"
-            style={{ color: "rgba(212,175,55,0.55)" }}
+            style={{ color: "rgba(252,85,0,0.55)" }}
           >
             {isAdmin ? "Administrador" : "Empleado"}
           </p>
@@ -61,7 +61,7 @@ export default function Sidebar() {
       </div>
 
       {/* Nueva Venta CTA */}
-      <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}>
+      <div className="px-4 py-3" style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}>
         <Link href="/pos" className="btn-gold w-full py-2.5 rounded flex items-center justify-center gap-2">
           <span className="material-symbols-outlined icon-sm">add</span>
           Nueva Venta
@@ -103,7 +103,7 @@ export default function Sidebar() {
       </ul>
 
       {/* Logout */}
-      <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(212,175,55,0.06)" }}>
+      <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(252,85,0,0.06)" }}>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="flex items-center gap-3 px-2 py-2.5 w-full rounded font-sans text-sm transition-all"

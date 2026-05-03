@@ -64,7 +64,7 @@ function ProductModal({ product, categories, onSave, onClose }: {
       <div className="card-premium rounded-xl w-full max-w-lg animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto">
         <div
           className="p-lg flex items-center justify-between sticky top-0 z-10"
-          style={{ background: "var(--surface-1)", borderBottom: "1px solid rgba(212,175,55,0.1)" }}
+          style={{ background: "var(--surface-1)", borderBottom: "1px solid rgba(252,85,0,0.1)" }}
         >
           <h3 className="font-display text-xl font-semibold" style={{ color: "#eae1d4" }}>
             {isNew ? "Agregar Producto" : "Editar Producto"}
@@ -81,7 +81,7 @@ function ProductModal({ product, categories, onSave, onClose }: {
               { label: "SKU *", key: "sku", type: "text", required: true },
             ].map(({ label, key, type, required, colSpan }) => (
               <div key={key} className={`flex flex-col gap-2 ${colSpan ? "md:col-span-2" : ""}`}>
-                <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
+                <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>
                   {label}
                 </label>
                 <input
@@ -94,7 +94,7 @@ function ProductModal({ product, categories, onSave, onClose }: {
               </div>
             ))}
             <div className="flex flex-col gap-2">
-              <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
+              <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>
                 Categoría *
               </label>
               <select
@@ -115,7 +115,7 @@ function ProductModal({ product, categories, onSave, onClose }: {
               { label: "Stock mínimo", key: "minStock", type: "number" },
             ].map(({ label, key, type, step }) => (
               <div key={key} className="flex flex-col gap-2">
-                <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
+                <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>
                   {label}
                 </label>
                 <input
@@ -130,13 +130,13 @@ function ProductModal({ product, categories, onSave, onClose }: {
               </div>
             ))}
             <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(212,175,55,0.6)" }}>
+              <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>
                 Imagen del producto
               </label>
               <div className="flex items-center gap-sm">
                 <label
                   className="cursor-pointer flex items-center gap-2 px-4 py-2.5 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
-                  style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", color: "rgba(212,175,55,0.8)" }}
+                  style={{ background: "rgba(252,85,0,0.08)", border: "1px solid rgba(252,85,0,0.2)", color: "rgba(252,85,0,0.8)" }}
                 >
                   <span className="material-symbols-outlined icon-sm">upload</span>
                   Elegir imagen
@@ -191,7 +191,7 @@ function ProductModal({ product, categories, onSave, onClose }: {
               className="flex-1 py-3 rounded font-sans text-xs font-bold uppercase tracking-wider transition-colors"
               style={{
                 background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(212,175,55,0.1)",
+                border: "1px solid rgba(252,85,0,0.1)",
                 color: "rgba(234,225,212,0.5)",
               }}
             >
@@ -313,11 +313,11 @@ export default function InventoryPage() {
             className="w-full rounded-lg py-3 pl-10 pr-4 font-sans text-sm outline-none transition-colors"
             style={{
               background: "var(--surface-2)",
-              border: "1px solid rgba(212,175,55,0.1)",
+              border: "1px solid rgba(252,85,0,0.1)",
               color: "#eae1d4",
             }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(212,175,55,0.35)")}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(212,175,55,0.1)")}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(252,85,0,0.35)")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(252,85,0,0.1)")}
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 hide-scrollbar">
@@ -330,8 +330,8 @@ export default function InventoryPage() {
                 className="font-sans text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition-all"
                 style={
                   isActive
-                    ? { background: "rgba(212,175,55,0.15)", color: "var(--gold-light)", border: "1px solid rgba(212,175,55,0.35)" }
-                    : { background: "var(--surface-2)", color: "rgba(234,225,212,0.4)", border: "1px solid rgba(212,175,55,0.06)" }
+                    ? { background: "rgba(252,85,0,0.15)", color: "var(--gold-light)", border: "1px solid rgba(252,85,0,0.35)" }
+                    : { background: "var(--surface-2)", color: "rgba(234,225,212,0.4)", border: "1px solid rgba(252,85,0,0.06)" }
                 }
               >
                 {cat.name}
@@ -346,7 +346,7 @@ export default function InventoryPage() {
         {/* Table header */}
         <div
           className="hidden md:grid grid-cols-[80px_2fr_1fr_1fr_1fr_140px] gap-md p-md font-sans text-[10px] font-bold uppercase tracking-wider"
-          style={{ borderBottom: "1px solid rgba(212,175,55,0.08)", color: "rgba(212,175,55,0.5)" }}
+          style={{ borderBottom: "1px solid rgba(252,85,0,0.08)", color: "rgba(252,85,0,0.5)" }}
         >
           <div>Imagen</div>
           <div>Producto</div>
@@ -358,7 +358,7 @@ export default function InventoryPage() {
 
         {loading ? (
           [...Array(5)].map((_, i) => (
-            <div key={i} className="grid grid-cols-1 md:grid-cols-[80px_2fr_1fr_1fr_1fr_140px] gap-md p-md items-center animate-pulse" style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}>
+            <div key={i} className="grid grid-cols-1 md:grid-cols-[80px_2fr_1fr_1fr_1fr_140px] gap-md p-md items-center animate-pulse" style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}>
               <div className="hidden md:block w-16 h-16 rounded" style={{ background: "var(--surface-3)" }} />
               <div className="h-8 rounded col-span-5" style={{ background: "var(--surface-3)" }} />
             </div>
@@ -375,8 +375,8 @@ export default function InventoryPage() {
               <div
                 key={product.id}
                 className={`grid grid-cols-1 md:grid-cols-[80px_2fr_1fr_1fr_1fr_140px] gap-y-sm gap-x-md p-md items-center transition-colors group relative ${!product.active ? "opacity-50" : ""}`}
-            style={{ borderBottom: "1px solid rgba(212,175,55,0.06)" }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(212,175,55,0.03)")}
+            style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(252,85,0,0.03)")}
             onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
               >
                 {lowStock && <div className="absolute left-0 top-0 bottom-0 w-1 bg-error rounded-l-lg" />}
@@ -419,7 +419,7 @@ export default function InventoryPage() {
                 <div className={lowStock ? "ml-2 md:ml-0" : ""}>
                   <span
                     className="inline-block font-sans text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded"
-                    style={{ background: "rgba(212,175,55,0.08)", color: "rgba(212,175,55,0.6)" }}
+                    style={{ background: "rgba(252,85,0,0.08)", color: "rgba(252,85,0,0.6)" }}
                   >
                     {product.category.name}
                   </span>
