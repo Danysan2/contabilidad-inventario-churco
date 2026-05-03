@@ -45,7 +45,7 @@ function ProductCard({ product, quantity, onAdd, onRemove }: {
 
         {/* Quantity badge / add button */}
         {quantity > 0 ? (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/80 backdrop-blur-sm border border-primary/30 rounded-full px-2 py-1">
+          <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/80 backdrop-blur-sm border border-primary/30 rounded-full px-2 py-1">
             <button onClick={onRemove} className="w-5 h-5 flex items-center justify-center text-primary hover:text-white transition-colors">
               <span className="material-symbols-outlined text-[16px]">remove</span>
             </button>

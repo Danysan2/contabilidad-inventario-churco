@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+type Branch = { id: string; name: string; slug: string };
 type SaleItem = { product: { name: string; image: string | null }; quantity: number; unitPrice: number };
 type Sale = {
   id: string;
@@ -159,6 +160,7 @@ export default function MovementsPage() {
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
   const [branchFilter, setBranchFilter] = useState<string>("all");
+  const [branches, setBranches] = useState<Branch[]>([]);
   const limit = 20;
 
   const isAdmin = session?.user?.role === "ADMIN";
@@ -182,6 +184,10 @@ export default function MovementsPage() {
   }, [page, dateFrom, dateTo, isAdmin, branchFilter]);
 
   useEffect(() => { fetchSales(); }, [fetchSales]);
+
+  useEffect(() => {
+    if (isAdmin) fetch("/api/branches").then((r) => r.json()).then(setBranches).catch(() => {});
+  }, [isAdmin]);
 
   async function handleDelete(id: string) {
     await fetch(`/api/sales/${id}`, { method: "DELETE" });
@@ -231,8 +237,9 @@ export default function MovementsPage() {
             style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.15)", color: "#eae1d4" }}
           >
             <option value="all">Todas las sucursales</option>
-            <option value="churco">Sucursal Churco</option>
-            <option value="suc2">Sucursal 2</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
           </select>
         </div>
       )}
