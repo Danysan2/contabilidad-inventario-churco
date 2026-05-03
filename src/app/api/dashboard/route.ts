@@ -132,12 +132,12 @@ export async function GET(req: NextRequest) {
   const topProductMap = Object.fromEntries(topProductDetails.map((p) => [p.id, p.name]));
 
   // Enrich branchRevenue with branch names
-  const branchIds = branchRevenue.map((b) => b.branchId);
+  const branchIds = branchRevenue.map((b) => b.branchId).filter((id): id is string => id !== null);
   const branches = await prisma.branch.findMany({ where: { id: { in: branchIds } }, select: { id: true, name: true } });
   const branchNameMap = Object.fromEntries(branches.map((b) => [b.id, b.name]));
   const branchRevenueNamed = branchRevenue.map((b) => ({
-    branchId: b.branchId,
-    name: branchNameMap[b.branchId] ?? b.branchId,
+    branchId: b.branchId ?? "",
+    name: b.branchId ? (branchNameMap[b.branchId] ?? b.branchId) : "Sin sucursal",
     revenue: Number(b._sum.total ?? 0),
   }));
 
