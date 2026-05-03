@@ -35,7 +35,7 @@ function ProductCard({ product, quantity, onAdd, onRemove }: {
             fill
             className="object-contain mix-blend-screen p-3"
             sizes="(max-width: 768px) 50vw, 25vw"
-            unoptimized={product.image.startsWith("data:")}
+            unoptimized={!product.image.startsWith("http")}
           />
         ) : (
           <span className="material-symbols-outlined text-[48px] text-[#2A2A2A]">inventory_2</span>
