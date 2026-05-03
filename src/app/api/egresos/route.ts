@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Datos inválidos", details: parsed.error.flatten() }, { status: 400 });
   }
   const { note, items } = parsed.data;
-  const branchId = (body.branchId as string | undefined) || session.user.branchId;
+  const branchId = ((body.branchId as string | undefined) || session.user.branchId) || undefined;
 
   const purchase = await prisma.$transaction(async (tx) => {
     const created = await tx.purchase.create({

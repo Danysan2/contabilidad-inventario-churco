@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
+type Branch = { id: string; name: string; slug: string };
 type Product = { id: string; name: string; sku: string; price: number; costPrice: number | null };
 type PurchaseItem = { product: { id: string; name: string; sku: string }; quantity: number; unitCost: number };
 type Purchase = { id: string; date: string; note: string | null; items: PurchaseItem[] };
@@ -11,14 +12,15 @@ type FixedExpense = { id: string; name: string; amount: number; categorySlug: st
 
 type DraftItem = { productId: string; quantity: string; unitCost: string };
 
-function PurchaseModal({ products, onSave, onClose, defaultBranchSlug }: {
+function PurchaseModal({ products, onSave, onClose, defaultBranchId, branches }: {
   products: Product[];
   onSave: () => void;
   onClose: () => void;
-  defaultBranchSlug: string;
+  defaultBranchId: string;
+  branches: Branch[];
 }) {
   const [note, setNote] = useState("");
-  const [branchSlug, setBranchSlug] = useState(defaultBranchSlug);
+  const [branchId, setBranchId] = useState(defaultBranchId);
   const [items, setItems] = useState<DraftItem[]>([{ productId: "", quantity: "", unitCost: "" }]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -48,7 +50,7 @@ function PurchaseModal({ products, onSave, onClose, defaultBranchSlug }: {
       const res = await fetch("/api/egresos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ note: note || undefined, items: valid, branchId: branchSlug }),
+        body: JSON.stringify({ note: note || undefined, items: valid, branchId }),
       });
       if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? "Error al guardar"); }
       onSave();
@@ -75,13 +77,14 @@ function PurchaseModal({ products, onSave, onClose, defaultBranchSlug }: {
           <div className="flex flex-col gap-1">
             <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>Sucursal</label>
             <select
-              value={branchSlug}
-              onChange={(e) => setBranchSlug(e.target.value)}
+              value={branchId}
+              onChange={(e) => setBranchId(e.target.value)}
               className="input-premium"
               style={{ background: "var(--surface-2)", color: "#eae1d4", colorScheme: "dark" }}
             >
-              <option value="churco" style={{ background: "#1a1610", color: "#eae1d4" }}>Sucursal Churco</option>
-              <option value="suc2" style={{ background: "#1a1610", color: "#eae1d4" }}>Sucursal 2</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id} style={{ background: "#1a1610", color: "#eae1d4" }}>{b.name}</option>
+              ))}
             </select>
           </div>
 
@@ -184,16 +187,18 @@ function PurchaseModal({ products, onSave, onClose, defaultBranchSlug }: {
   );
 }
 
-function FixedExpenseModal({ expense, onSave, onClose }: {
-  expense?: Partial<FixedExpense & { branchSlug?: string }>;
+function FixedExpenseModal({ expense, onSave, onClose, branches, defaultBranchId }: {
+  expense?: Partial<FixedExpense & { branchId?: string }>;
   onSave: () => void;
   onClose: () => void;
+  branches: Branch[];
+  defaultBranchId: string;
 }) {
   const [name, setName] = useState(expense?.name ?? "");
   const [amount, setAmount] = useState(expense?.amount ? String(expense.amount) : "");
   const [categorySlug, setCategorySlug] = useState(expense?.categorySlug ?? "");
   const [description, setDescription] = useState(expense?.description ?? "");
-  const [branchSlug, setBranchSlug] = useState(expense?.branchSlug ?? "churco");
+  const [branchId, setBranchId] = useState(expense?.branchId ?? defaultBranchId);
   const [saving, setSaving] = useState(false);
 
   const labelStyle = { color: "rgba(252,85,0,0.6)" };
@@ -203,7 +208,7 @@ function FixedExpenseModal({ expense, onSave, onClose }: {
     try {
       const url = expense?.id ? `/api/gastos-fijos/${expense.id}` : "/api/gastos-fijos";
       const method = expense?.id ? "PUT" : "POST";
-      await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, amount: parseFloat(amount) || 0, categorySlug, description, branchId: branchSlug }) });
+      await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, amount: parseFloat(amount) || 0, categorySlug, description, branchId }) });
       onSave(); onClose();
     } finally { setSaving(false); }
   }
@@ -241,13 +246,14 @@ function FixedExpenseModal({ expense, onSave, onClose }: {
           <div className="flex flex-col gap-1">
             <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>Sucursal</label>
             <select
-              value={branchSlug}
-              onChange={(e) => setBranchSlug(e.target.value)}
+              value={branchId}
+              onChange={(e) => setBranchId(e.target.value)}
               className="input-premium"
               style={{ background: "var(--surface-2)", color: "#eae1d4", colorScheme: "dark" }}
             >
-              <option value="churco" style={{ background: "#1a1610", color: "#eae1d4" }}>Sucursal Churco</option>
-              <option value="suc2" style={{ background: "#1a1610", color: "#eae1d4" }}>Sucursal 2</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id} style={{ background: "#1a1610", color: "#eae1d4" }}>{b.name}</option>
+              ))}
             </select>
           </div>
           <div className="flex flex-col gap-1">
@@ -278,6 +284,7 @@ export default function EgresosPage() {
   const isAdmin = session?.user?.role === "ADMIN";
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [fixedExpenses, setFixedExpenses] = useState<FixedExpense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -293,14 +300,16 @@ export default function EgresosPage() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [prodRes, purchRes, fxRes] = await Promise.all([
+      const [prodRes, purchRes, fxRes, branchRes] = await Promise.all([
         fetch("/api/products?active=false"),
         fetch("/api/egresos"),
         fetch("/api/gastos-fijos"),
+        fetch("/api/branches"),
       ]);
       if (prodRes.ok) setProducts(await prodRes.json());
       if (purchRes.ok) { const d = await purchRes.json(); setPurchases(d.purchases); }
       if (fxRes.ok) setFixedExpenses(await fxRes.json());
+      if (branchRes.ok) setBranches(await branchRes.json());
     } finally { setLoading(false); }
   }, []);
 
@@ -502,10 +511,10 @@ export default function EgresosPage() {
 
       {/* Modals */}
       {showPurchaseModal && (
-        <PurchaseModal products={products} onSave={fetchAll} onClose={() => setShowPurchaseModal(false)} defaultBranchSlug="churco" />
+        <PurchaseModal products={products} onSave={fetchAll} onClose={() => setShowPurchaseModal(false)} defaultBranchId={branches[0]?.id ?? ""} branches={branches} />
       )}
       {editExpense !== null && (
-        <FixedExpenseModal expense={editExpense} onSave={fetchAll} onClose={() => setEditExpense(null)} />
+        <FixedExpenseModal expense={editExpense} onSave={fetchAll} onClose={() => setEditExpense(null)} branches={branches} defaultBranchId={branches[0]?.id ?? ""} />
       )}
       {deleteExpenseId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">

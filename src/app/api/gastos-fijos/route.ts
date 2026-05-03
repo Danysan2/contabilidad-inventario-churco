@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Datos inválidos", details: parsed.error.flatten() }, { status: 400 });
   }
   const { name, amount, categorySlug, description } = parsed.data;
-  const branchId = (body.branchId as string | undefined) || session.user.branchId;
+  const branchId = ((body.branchId as string | undefined) || session.user.branchId) || undefined;
 
   const expense = await prisma.fixedExpense.create({
     data: { name, amount, categorySlug: categorySlug || null, description: description || null, branchId },
