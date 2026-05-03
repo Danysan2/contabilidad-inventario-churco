@@ -36,6 +36,7 @@ type DashboardData = {
 };
 
 type Period = "day" | "week" | "month";
+type Branch = { id: string; name: string; slug: string };
 
 function MetricCard({ label, value, change, icon, prefix = "" }: {
   label: string; value: number; change: number; icon: string; prefix?: string;
@@ -82,6 +83,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [period, setPeriod] = useState<Period>("week");
   const [branchFilter, setBranchFilter] = useState<string>("all");
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
 
   const isAdmin = session?.user?.role === "ADMIN";
@@ -101,6 +103,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!isAdmin) { router.push("/pos"); return; }
     fetchData();
+    fetch("/api/branches").then((r) => r.json()).then(setBranches).catch(() => {});
   }, [isAdmin, router, fetchData]);
 
   if (!isAdmin) return null;
@@ -141,8 +144,9 @@ export default function DashboardPage() {
             style={{ background: "var(--surface-2)", border: "1px solid rgba(212,175,55,0.15)", color: "#eae1d4" }}
           >
             <option value="all">Todas las sucursales</option>
-            <option value="churco">Sucursal Churco</option>
-            <option value="suc2">Sucursal 2</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
           </select>
 
           {/* Period selector */}

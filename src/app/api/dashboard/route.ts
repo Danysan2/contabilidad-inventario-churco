@@ -14,6 +14,8 @@ export async function GET(req: NextRequest) {
   const branchParam = searchParams.get("branchId");
   const branchId = branchParam && branchParam !== "all" ? branchParam : null;
 
+  console.log(`[DASHBOARD] period=${period} branchParam=${branchParam ?? "(ninguno)"} branchId=${branchId ?? "all"}`);
+
   const now = new Date();
   const from = new Date();
   if (period === "day") from.setHours(0, 0, 0, 0);
@@ -172,6 +174,8 @@ export async function GET(req: NextRequest) {
   const salesByGroup = Object.entries(groupedRevenue)
     .map(([name, revenue]) => ({ name, revenue }))
     .sort((a, b) => b.revenue - a.revenue);
+
+  console.log(`[DASHBOARD] Resultado — totalRevenue=${currentTotal} totalSales=${currentSales._count} branches=${JSON.stringify(branchRevenueNamed.map(b => `${b.name}:${b.revenue}`))}`);
 
   return NextResponse.json({
     totalRevenue: currentTotal,

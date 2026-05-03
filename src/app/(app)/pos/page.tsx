@@ -85,7 +85,7 @@ function ProductCard({ product, quantity, onAdd, onRemove }: {
   );
 }
 
-function ConfirmModal({ cart, total, onConfirm, onCancel, loading, isAdmin, defaultBranchId, branches }: {
+function ConfirmModal({ cart, total, onConfirm, onCancel, loading, isAdmin, defaultBranchId, branches, externalError }: {
   cart: CartItem[]; total: number;
   onConfirm: (note: string, branchId: string) => void;
   onCancel: () => void;
@@ -93,6 +93,7 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading, isAdmin, defa
   isAdmin: boolean;
   defaultBranchId: string;
   branches: Branch[];
+  externalError?: string;
 }) {
   const [note, setNote] = useState("");
   const [branchId, setBranchId] = useState(defaultBranchId);
@@ -185,6 +186,15 @@ function ConfirmModal({ cart, total, onConfirm, onCancel, loading, isAdmin, defa
           </div>
         </div>
 
+        {externalError && (
+          <div className="px-lg pb-0 pt-0">
+            <div className="flex items-center gap-2 px-3 py-2 rounded text-sm font-sans" style={{ background: "rgba(220,38,38,0.1)", border: "1px solid rgba(220,38,38,0.25)", color: "#f87171" }}>
+              <span className="material-symbols-outlined icon-sm">error</span>
+              {externalError}
+            </div>
+          </div>
+        )}
+
         <div className="p-lg flex gap-sm" style={{ borderTop: "1px solid rgba(252,85,0,0.1)" }}>
           <button
             onClick={onCancel}
@@ -230,6 +240,7 @@ export default function POSPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [saleError, setSaleError] = useState("");
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -275,6 +286,7 @@ export default function POSPage() {
 
   async function handleConfirm(note: string, branchId: string) {
     setSubmitting(true);
+    setSaleError("");
     try {
       const res = await fetch("/api/sales", {
         method: "POST",
@@ -288,9 +300,14 @@ export default function POSPage() {
       if (res.ok) {
         setCart([]);
         setShowConfirm(false);
+        setSaleError("");
         setSuccessMsg("¡Venta registrada exitosamente!");
         fetchProducts();
         setTimeout(() => setSuccessMsg(""), 3000);
+      } else {
+        let msg = "Error al registrar la venta";
+        try { const data = await res.json(); msg = data.error ?? msg; } catch { /* empty */ }
+        setSaleError(msg);
       }
     } finally {
       setSubmitting(false);
@@ -455,11 +472,12 @@ export default function POSPage() {
           cart={cart}
           total={cartTotal}
           onConfirm={handleConfirm}
-          onCancel={() => setShowConfirm(false)}
+          onCancel={() => { setShowConfirm(false); setSaleError(""); }}
           loading={submitting}
           isAdmin={isAdmin}
           defaultBranchId={isAdmin ? (branches[0]?.id ?? sessionBranchId) : sessionBranchId}
           branches={branches}
+          externalError={saleError}
         />
       )}
 
