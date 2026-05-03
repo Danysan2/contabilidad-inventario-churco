@@ -10,7 +10,7 @@ const navItems = [
   { href: "/ranking",   label: "Ranking",   icon: "military_tech",   adminOnly: false },
   { href: "/dashboard", label: "Dashboard", icon: "dashboard",       adminOnly: true  },
   { href: "/movements", label: "Historial", icon: "receipt_long",    adminOnly: false },
-  { href: "/inventory", label: "Stock",     icon: "inventory",       adminOnly: true  },
+  { href: "/inventory", label: "Stock",     icon: "inventory",       adminOnly: false },
   { href: "/egresos",   label: "Egresos",   icon: "trending_down",   adminOnly: true  },
 ];
 
