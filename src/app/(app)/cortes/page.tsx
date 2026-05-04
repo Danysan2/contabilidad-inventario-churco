@@ -31,20 +31,24 @@ function CorteModal({
   onClose: () => void;
   lastOwnerPct: number;
 }) {
-  const [price, setPrice] = useState("");
-  const [ownerPct, setOwnerPct] = useState("35");
+  const PRICE_OPTIONS = [
+    { label: "Corte normal — $20.000", value: 20000 },
+    { label: "Corte con barba — $28.000", value: 28000 },
+  ];
+
+  const [price, setPrice] = useState<number>(20000);
+  const [ownerPct] = useState(35);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const priceNum = parseFloat(price) || 0;
-  const pctNum = parseFloat(ownerPct) || 0;
+  const priceNum = price;
+  const pctNum = ownerPct;
   const ownerAmount = priceNum * pctNum / 100;
   const employeeAmount = priceNum - ownerAmount;
 
   async function handleSave() {
-    if (!priceNum || priceNum <= 0) { setError("El valor debe ser mayor a 0"); return; }
-    if (pctNum < 0 || pctNum > 100) { setError("El porcentaje debe estar entre 0 y 100"); return; }
+    if (!priceNum || priceNum <= 0) { setError("Selecciona el tipo de corte"); return; }
     setSaving(true); setError("");
     try {
       const res = await fetch("/api/cortes", {
@@ -76,38 +80,35 @@ function CorteModal({
 
         <div className="p-lg flex flex-col gap-md">
           <div className="flex flex-col gap-1">
-            <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>Valor del corte (COP) *</label>
-            <input
-              type="number"
-              min={0}
-              step={1000}
+            <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>Tipo de corte *</label>
+            <select
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="Ej: 25000"
+              onChange={(e) => setPrice(Number(e.target.value))}
               className="input-premium"
               autoFocus
-            />
+            >
+              {PRICE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>% del dueño *</label>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              step={1}
-              value={ownerPct}
-              onChange={(e) => setOwnerPct(e.target.value)}
-              placeholder="Ej: 40"
-              className="input-premium"
-            />
+            <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={labelStyle}>% Churco</label>
+            <div
+              className="input-premium flex items-center gap-2"
+              style={{ opacity: 0.6, cursor: "default", userSelect: "none" }}
+            >
+              <span className="material-symbols-outlined icon-sm" style={{ color: "rgba(252,85,0,0.5)", fontSize: 16 }}>lock</span>
+              <span>{ownerPct}% Churco / {100 - ownerPct}% barbero</span>
+            </div>
           </div>
 
           {/* Preview */}
           {priceNum > 0 && (
             <div className="flex gap-sm">
               <div className="flex-1 rounded-lg px-3 py-2.5 text-center" style={{ background: "rgba(252,85,0,0.08)", border: "1px solid rgba(252,85,0,0.15)" }}>
-                <p className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(252,85,0,0.55)" }}>Dueño</p>
+                <p className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(252,85,0,0.55)" }}>Churco</p>
                 <p className="font-display font-bold text-lg" style={{ color: "#fc5500" }}>${ownerAmount.toLocaleString("es-CO")}</p>
               </div>
               <div className="flex-1 rounded-lg px-3 py-2.5 text-center" style={{ background: "rgba(234,225,212,0.05)", border: "1px solid rgba(234,225,212,0.08)" }}>
@@ -273,7 +274,7 @@ export default function CortesPage() {
           <div className="font-display text-xl font-bold text-gold-gradient">${totalBruto.toLocaleString("es-CO")}</div>
         </div>
         <div className="card-premium rounded-lg px-4 py-3 text-center">
-          <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={labelStyle}>Para el dueño</div>
+          <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={labelStyle}>Para Churco</div>
           <div className="font-display text-xl font-bold" style={{ color: "#fc5500" }}>${totalDueno.toLocaleString("es-CO")}</div>
         </div>
         <div className="card-premium rounded-lg px-4 py-3 text-center">
@@ -295,7 +296,7 @@ export default function CortesPage() {
           <span>Hora / Nota</span>
           {isAdmin && <span>Barbero</span>}
           <span>Valor</span>
-          <span>Dueño</span>
+          <span>Churco</span>
           <span>Empleado</span>
           <span />
         </div>
