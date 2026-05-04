@@ -74,13 +74,13 @@ function ProductModal({ product, categories, activeBranch, onSave, onClose }: {
     : activeBranch !== "all" ? "Stock actual (esta sucursal)" : "Stock actual (global)";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 pb-24 md:pb-4">
-      <div className="card-premium rounded-xl w-full max-w-lg animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-2 pb-20 md:p-4 md:pb-4">
+      <div className="card-premium rounded-xl w-full max-w-lg animate-slide-up shadow-2xl max-h-[92vh] overflow-y-auto">
         <div
-          className="p-lg flex items-center justify-between sticky top-0 z-10"
+          className="px-4 py-3 md:p-lg flex items-center justify-between sticky top-0 z-10"
           style={{ background: "var(--surface-1)", borderBottom: "1px solid rgba(252,85,0,0.1)" }}
         >
-          <h3 className="font-display text-xl font-semibold" style={{ color: "#eae1d4" }}>
+          <h3 className="font-display text-base md:text-xl font-semibold" style={{ color: "#eae1d4" }}>
             {isNew ? "Agregar Producto" : "Editar Producto"}
           </h3>
           <button onClick={onClose} style={{ color: "rgba(234,225,212,0.4)" }} className="hover:text-white transition-colors">
@@ -88,7 +88,7 @@ function ProductModal({ product, categories, activeBranch, onSave, onClose }: {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-lg flex flex-col gap-md">
+        <form onSubmit={handleSubmit} className="px-4 py-3 md:p-lg flex flex-col gap-3 md:gap-md">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
             {[
               { label: "Nombre *", key: "name", type: "text", required: true, colSpan: true },

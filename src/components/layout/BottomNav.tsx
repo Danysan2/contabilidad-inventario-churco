@@ -7,8 +7,6 @@ import { useSession } from "next-auth/react";
 const navItems = [
   { href: "/pos",       label: "Ventas",    icon: "shopping_basket", adminOnly: false, allowedEmails: undefined as string[] | undefined },
   { href: "/cortes",    label: "Cortes",    icon: "content_cut",     adminOnly: false, allowedEmails: ["mauricio@churco.com", "carlos@churco.com"] },
-  { href: "/catalogo",  label: "Catálogo",  icon: "photo_library",   adminOnly: false, allowedEmails: undefined as string[] | undefined },
-  { href: "/ranking",   label: "Ranking",   icon: "military_tech",   adminOnly: true,  allowedEmails: undefined as string[] | undefined },
   { href: "/dashboard", label: "Dashboard", icon: "dashboard",       adminOnly: false, allowedEmails: undefined as string[] | undefined },
   { href: "/movements", label: "Historial", icon: "receipt_long",    adminOnly: false, allowedEmails: undefined as string[] | undefined },
   { href: "/inventory", label: "Stock",     icon: "inventory",       adminOnly: false, allowedEmails: undefined as string[] | undefined },
