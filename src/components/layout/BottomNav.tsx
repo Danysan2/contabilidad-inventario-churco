@@ -8,7 +8,7 @@ const navItems = [
   { href: "/pos",       label: "Ventas",    icon: "shopping_basket", adminOnly: false },
   { href: "/cortes",    label: "Cortes",    icon: "content_cut",     adminOnly: false },
   { href: "/catalogo",  label: "Catálogo",  icon: "photo_library",   adminOnly: false },
-  { href: "/ranking",   label: "Ranking",   icon: "military_tech",   adminOnly: false },
+  { href: "/ranking",   label: "Ranking",   icon: "military_tech",   adminOnly: true  },
   { href: "/dashboard", label: "Dashboard", icon: "dashboard",       adminOnly: true  },
   { href: "/movements", label: "Historial", icon: "receipt_long",    adminOnly: false },
   { href: "/inventory", label: "Stock",     icon: "inventory",       adminOnly: false },

@@ -11,7 +11,7 @@ const navItems = [
   { href: "/pos", label: "Punto de Venta", icon: "point_of_sale", adminOnly: false },
   { href: "/cortes", label: "Cortes", icon: "content_cut", adminOnly: false },
   { href: "/catalogo", label: "Catálogo", icon: "photo_library", adminOnly: false },
-  { href: "/ranking", label: "Ranking", icon: "military_tech", adminOnly: false },
+  { href: "/ranking", label: "Ranking", icon: "military_tech", adminOnly: true },
   { href: "/egresos", label: "Egresos", icon: "trending_down", adminOnly: true },
 ];
 

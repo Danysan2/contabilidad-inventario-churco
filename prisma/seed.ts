@@ -118,23 +118,23 @@ async function main() {
   await Promise.all([
     prisma.user.upsert({
       where: { email: "maxwell@churco.com" },
-      update: {},
-      create: { name: "Maxwell", email: "maxwell@churco.com", password: await bcrypt.hash("Maxwell2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+      update: { branchId: suc2.id },
+      create: { name: "Maxwell", email: "maxwell@churco.com", password: await bcrypt.hash("Maxwell2026.", 10), role: "EMPLOYEE", branchId: suc2.id },
     }),
     prisma.user.upsert({
       where: { email: "freddy@churco.com" },
-      update: {},
-      create: { name: "Freddy", email: "freddy@churco.com", password: await bcrypt.hash("Freddy2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+      update: { branchId: suc2.id },
+      create: { name: "Freddy", email: "freddy@churco.com", password: await bcrypt.hash("Freddy2026.", 10), role: "EMPLOYEE", branchId: suc2.id },
     }),
     prisma.user.upsert({
       where: { email: "mauricio@churco.com" },
-      update: {},
-      create: { name: "Mauricio", email: "mauricio@churco.com", password: await bcrypt.hash("Mauricio2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+      update: { branchId: suc2.id },
+      create: { name: "Mauricio", email: "mauricio@churco.com", password: await bcrypt.hash("Mauricio2026.", 10), role: "EMPLOYEE", branchId: suc2.id },
     }),
     prisma.user.upsert({
       where: { email: "carlos@churco.com" },
-      update: {},
-      create: { name: "Carlos", email: "carlos@churco.com", password: await bcrypt.hash("Carlos2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+      update: { branchId: suc2.id },
+      create: { name: "Carlos", email: "carlos@churco.com", password: await bcrypt.hash("Carlos2026.", 10), role: "EMPLOYEE", branchId: suc2.id },
     }),
   ]);
 

@@ -2,6 +2,11 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { es } from "date-fns/locale/es";
+import "react-datepicker/dist/react-datepicker.css";
+
+registerLocale("es", es);
 
 type Corte = {
   id: string;
@@ -163,7 +168,7 @@ export default function CortesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [filterEmployee, setFilterEmployee] = useState<string>("all");
-  const [filterDate, setFilterDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [filterDate, setFilterDate] = useState<Date>(new Date());
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const lastOwnerPct = cortes.length > 0 ? cortes[0].ownerPct : 40;
@@ -176,6 +181,7 @@ export default function CortesPage() {
       from.setHours(0, 0, 0, 0);
       const to = new Date(filterDate);
       to.setHours(23, 59, 59, 999);
+
       params.set("from", from.toISOString());
       params.set("to", to.toISOString());
       if (isAdmin && filterEmployee !== "all") params.set("employeeId", filterEmployee);
@@ -222,12 +228,14 @@ export default function CortesPage() {
         </div>
         <div className="flex gap-sm items-center flex-wrap">
           {/* Date filter */}
-          <input
-            type="date"
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-            className="input-premium px-3 py-2 rounded font-sans text-sm"
-            style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.15)", color: "#eae1d4", colorScheme: "dark" }}
+          <DatePicker
+            selected={filterDate}
+            onChange={(d) => d && setFilterDate(d)}
+            dateFormat="dd/MM/yyyy"
+            locale="es"
+            showPopperArrow={false}
+            maxDate={new Date()}
+            className="px-4 py-2 rounded font-sans text-sm outline-none transition-colors datepicker-gold"
           />
           {/* Employee filter (admin only) */}
           {isAdmin && employees.length > 0 && (

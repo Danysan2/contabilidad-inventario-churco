@@ -301,30 +301,8 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Sales by employee chart */}
-          {data?.salesByEmployee?.length ? (
-            <div className="card-premium rounded-xl p-lg mb-xl">
-              <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Ventas por Barbero</h3>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={data.salesByEmployee}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#3d1a0a" />
-                  <XAxis dataKey="name" tick={{ fill: "#d0c5af", fontSize: 12 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: "#d0c5af", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
-                  <Tooltip content={({ active, payload }) => active && payload?.length ? (
-                    <div className="px-3 py-2 rounded-lg shadow-xl" style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.2)" }}>
-                      <p className="font-sans text-xs mb-1" style={{ color: "rgba(234,225,212,0.5)" }}>{(payload[0].payload as { name: string }).name}</p>
-                      <p className="font-display font-bold" style={{ color: "#fc5500" }}>${Number(payload[0].value).toLocaleString("es-MX")}</p>
-                      <p className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.5)" }}>{(payload[0].payload as { count: number }).count} ventas</p>
-                    </div>
-                  ) : null} />
-                  <Bar dataKey="revenue" name="Ingresos" fill="#fc5500" radius={4} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : null}
-
-          {/* Low stock, top products & recent sales */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-md">
+          {/* Low stock, top products & ventas por barbero */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-md mb-md">
             {/* Low stock alert */}
             <div className="card-premium rounded-xl p-lg">
               <div className="flex items-center gap-sm mb-lg">
@@ -375,36 +353,57 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Recent sales */}
-            <div className="lg:col-span-2 card-premium rounded-xl p-lg">
-              <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Ventas Recientes</h3>
-              {data?.recentSales.length ? (
-                <ul className="flex flex-col gap-sm">
-                  {data.recentSales.slice(0, 5).map((s) => (
-                    <li key={s.id} className="flex items-center justify-between py-2 border-b border-outline-variant last:border-0">
-                      <div>
-                        <div className="text-on-surface font-sans text-sm font-semibold">
-                          {s.items.map((i) => `${i.product.name} x${i.quantity}`).join(", ").slice(0, 40)}
-                          {s.items.reduce((a, b) => a + b.quantity, 0) > 2 ? "..." : ""}
-                        </div>
-                        <div className="text-on-surface-variant text-xs">
-                          {s.employee.name}
-                          {s.branch ? ` · ${s.branch.name}` : ""}
-                          {" · "}{new Date(s.createdAt).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                        </div>
+            {/* Ventas por barbero */}
+            <div className="card-premium rounded-xl p-lg">
+              <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Ventas por Barbero</h3>
+              {data?.salesByEmployee?.length ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={data.salesByEmployee} layout="vertical">
+                    <XAxis type="number" tick={{ fill: "#d0c5af", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: "#d0c5af", fontSize: 10 }} axisLine={false} tickLine={false} width={72} />
+                    <Tooltip content={({ active, payload }) => active && payload?.length ? (
+                      <div className="px-2 py-1 rounded text-xs" style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.2)", color: "var(--gold-light)" }}>
+                        ${Number(payload[0].value).toLocaleString("es-MX")} · {(payload[0].payload as { count: number }).count} ventas
                       </div>
-                      <span className="text-primary font-serif font-bold">
-                        ${Number(s.total).toLocaleString("es-MX")}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                    ) : null} />
+                    <Bar dataKey="revenue" fill="#fc5500" radius={2} />
+                  </BarChart>
+                </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-24 text-on-surface-variant text-sm font-sans">
-                  Sin ventas en este período
-                </div>
+                <div className="h-[220px] flex items-center justify-center text-on-surface-variant font-sans text-sm">Sin ventas registradas</div>
               )}
             </div>
+          </div>
+
+          {/* Recent sales */}
+          <div className="card-premium rounded-xl p-lg">
+            <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Ventas Recientes</h3>
+            {data?.recentSales.length ? (
+              <ul className="flex flex-col gap-sm">
+                {data.recentSales.slice(0, 5).map((s) => (
+                  <li key={s.id} className="flex items-center justify-between py-2 border-b border-outline-variant last:border-0">
+                    <div>
+                      <div className="text-on-surface font-sans text-sm font-semibold">
+                        {s.items.map((i) => `${i.product.name} x${i.quantity}`).join(", ").slice(0, 40)}
+                        {s.items.reduce((a, b) => a + b.quantity, 0) > 2 ? "..." : ""}
+                      </div>
+                      <div className="text-on-surface-variant text-xs">
+                        {s.employee.name}
+                        {s.branch ? ` · ${s.branch.name}` : ""}
+                        {" · "}{new Date(s.createdAt).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    </div>
+                    <span className="text-primary font-serif font-bold">
+                      ${Number(s.total).toLocaleString("es-MX")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="flex items-center justify-center h-24 text-on-surface-variant text-sm font-sans">
+                Sin ventas en este período
+              </div>
+            )}
           </div>
         </>
       )}
