@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 type Branch = { id: string; name: string; slug: string };
 type Product = { id: string; name: string; sku: string; price: number; costPrice: number | null };
 type PurchaseItem = { product: { id: string; name: string; sku: string }; quantity: number; unitCost: number };
-type Purchase = { id: string; date: string; note: string | null; items: PurchaseItem[] };
+type Purchase = { id: string; date: string; note: string | null; items: PurchaseItem[]; branch?: { id: string; name: string; slug: string } | null };
 type FixedExpense = { id: string; name: string; amount: number; categorySlug: string | null; description: string | null; active: boolean };
 
 type DraftItem = { productId: string; quantity: string; unitCost: string };
