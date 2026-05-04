@@ -230,7 +230,7 @@ export default function CortesPage() {
           {/* Date filter */}
           <DatePicker
             selected={filterDate}
-            onChange={(d) => d && setFilterDate(d)}
+            onChange={(d: Date | null) => d && setFilterDate(d)}
             dateFormat="dd/MM/yyyy"
             locale="es"
             showPopperArrow={false}
