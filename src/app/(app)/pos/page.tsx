@@ -475,7 +475,7 @@ export default function POSPage() {
           onCancel={() => { setShowConfirm(false); setSaleError(""); }}
           loading={submitting}
           isAdmin={isAdmin}
-          defaultBranchId={isAdmin ? (branches[0]?.id ?? sessionBranchId) : sessionBranchId}
+          defaultBranchId={isAdmin ? (branches[0]?.id ?? sessionBranchId) : (branches.find((b) => b.slug === "suc2")?.id ?? sessionBranchId)}
           branches={branches}
           externalError={saleError}
         />
