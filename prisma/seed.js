@@ -99,6 +99,30 @@ async function main() {
     create: { name: "userSuc2", email: "userSuc2@gmail.com", password: hashedEmployee, role: "EMPLOYEE", branchId: suc2.id },
   });
 
+  // ── Barber employees ────────────────────────────────────────────────────────
+  await Promise.all([
+    prisma.user.upsert({
+      where: { email: "maxwell@churco.com" },
+      update: {},
+      create: { name: "Maxwell", email: "maxwell@churco.com", password: await bcrypt.hash("Maxwell2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+    }),
+    prisma.user.upsert({
+      where: { email: "freddy@churco.com" },
+      update: {},
+      create: { name: "Freddy", email: "freddy@churco.com", password: await bcrypt.hash("Freddy2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+    }),
+    prisma.user.upsert({
+      where: { email: "mauricio@churco.com" },
+      update: {},
+      create: { name: "Mauricio", email: "mauricio@churco.com", password: await bcrypt.hash("Mauricio2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+    }),
+    prisma.user.upsert({
+      where: { email: "carlos@churco.com" },
+      update: {},
+      create: { name: "Carlos", email: "carlos@churco.com", password: await bcrypt.hash("Carlos2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+    }),
+  ]);
+
   // ── Migrate existing records to Sucursal Churco (safe: only if branchId missing) ──
   // These run via raw SQL to handle null branchId from before migration
   await prisma.$executeRawUnsafe(

@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     currentSales, prevSales, allActiveProducts,
     topProducts, recentSales, dailyTotals,
     saleItemsWithCost, fixedExpenses, categoryRevenue,
-    branchRevenue, dailyPurchases,
+    branchRevenue, salesByEmployeeRaw, dailyPurchases,
   ] = await Promise.all([
     prisma.sale.aggregate({ where: saleWhere, _sum: { total: true }, _count: true }),
     prisma.sale.aggregate({ where: prevSaleWhere, _sum: { total: true }, _count: true }),
@@ -105,6 +105,13 @@ export async function GET(req: NextRequest) {
       where: { createdAt: { gte: from } },
       _sum: { total: true },
     }),
+    // Sales by employee for the period
+    prisma.sale.groupBy({
+      by: ["employeeId"],
+      where: { createdAt: { gte: from }, ...(branchId ? { branchId } : {}) },
+      _sum: { total: true },
+      _count: { id: true },
+    }),
     // Daily purchase totals (for egresos line in main chart)
     period === "day"
       ? prisma.$queryRawUnsafe<{ date: string; total: number }[]>(
@@ -132,6 +139,16 @@ export async function GET(req: NextRequest) {
   const topProductIds = topProducts.map((p) => p.productId);
   const topProductDetails = await prisma.product.findMany({ where: { id: { in: topProductIds } }, select: { id: true, name: true } });
   const topProductMap = Object.fromEntries(topProductDetails.map((p) => [p.id, p.name]));
+
+  // Enrich salesByEmployee with employee names
+  const employeeIds = salesByEmployeeRaw.map((e) => e.employeeId);
+  const employeeUsers = await prisma.user.findMany({ where: { id: { in: employeeIds } }, select: { id: true, name: true } });
+  const employeeNameMap = Object.fromEntries(employeeUsers.map((u) => [u.id, u.name]));
+  const salesByEmployee = salesByEmployeeRaw.map((e) => ({
+    name: employeeNameMap[e.employeeId] ?? "Desconocido",
+    revenue: Number(e._sum.total ?? 0),
+    count: e._count.id,
+  })).sort((a, b) => b.revenue - a.revenue);
 
   // Enrich branchRevenue with branch names
   const branchIds = branchRevenue.map((b) => b.branchId).filter((id): id is string => id !== null);
@@ -215,5 +232,6 @@ export async function GET(req: NextRequest) {
     dailyExpenses: dailyExpensesCombined,
     salesByGroup,
     branchRevenue: branchRevenueNamed,
+    salesByEmployee,
   });
 }

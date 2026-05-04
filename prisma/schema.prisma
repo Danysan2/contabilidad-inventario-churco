@@ -29,6 +29,7 @@ model Branch {
   sales     Sale[]
   purchases Purchase[]
   expenses  FixedExpense[]
+  cortes    Corte[]
 }
 
 model User {
@@ -43,6 +44,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   sales     Sale[]
+  cortes    Corte[]
 }
 
 model Category {
@@ -136,6 +138,21 @@ model FixedExpense {
   branchId     String?
   branch       Branch?  @relation(fields: [branchId], references: [id])
   createdAt    DateTime @default(now())
+}
+
+model Corte {
+  id         String   @id @default(cuid())
+  employeeId String
+  employee   User     @relation(fields: [employeeId], references: [id])
+  branchId   String?
+  branch     Branch?  @relation(fields: [branchId], references: [id])
+  price      Decimal  @db.Decimal(10, 2)
+  ownerPct   Decimal  @db.Decimal(5, 2)
+  note       String?
+  createdAt  DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([createdAt])
 }
 
 model StockMovement {

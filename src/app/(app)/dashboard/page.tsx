@@ -33,6 +33,7 @@ type DashboardData = {
   dailyTotals: { date: string; total: number }[];
   dailyExpenses: { date: string; total: number }[];
   branchRevenue: { branchId: string; name: string; revenue: number }[];
+  salesByEmployee: { name: string; revenue: number; count: number }[];
 };
 
 type Period = "day" | "week" | "month";
@@ -299,6 +300,28 @@ export default function DashboardPage() {
               <div className="h-[180px] flex items-center justify-center text-on-surface-variant font-sans text-sm">Sin datos de sucursales</div>
             )}
           </div>
+
+          {/* Sales by employee chart */}
+          {data?.salesByEmployee?.length ? (
+            <div className="card-premium rounded-xl p-lg mb-xl">
+              <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Ventas por Barbero</h3>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={data.salesByEmployee}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#3d1a0a" />
+                  <XAxis dataKey="name" tick={{ fill: "#d0c5af", fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#d0c5af", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
+                  <Tooltip content={({ active, payload }) => active && payload?.length ? (
+                    <div className="px-3 py-2 rounded-lg shadow-xl" style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.2)" }}>
+                      <p className="font-sans text-xs mb-1" style={{ color: "rgba(234,225,212,0.5)" }}>{(payload[0].payload as { name: string }).name}</p>
+                      <p className="font-display font-bold" style={{ color: "#fc5500" }}>${Number(payload[0].value).toLocaleString("es-MX")}</p>
+                      <p className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.5)" }}>{(payload[0].payload as { count: number }).count} ventas</p>
+                    </div>
+                  ) : null} />
+                  <Bar dataKey="revenue" name="Ingresos" fill="#fc5500" radius={4} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : null}
 
           {/* Low stock, top products & recent sales */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-md">

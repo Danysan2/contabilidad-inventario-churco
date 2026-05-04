@@ -114,6 +114,30 @@ async function main() {
     }).catch(() => { /* ya migrado, ignorar */ });
   }
 
+  // ── Barber employees ────────────────────────────────────────────────────────
+  await Promise.all([
+    prisma.user.upsert({
+      where: { email: "maxwell@churco.com" },
+      update: {},
+      create: { name: "Maxwell", email: "maxwell@churco.com", password: await bcrypt.hash("Maxwell2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+    }),
+    prisma.user.upsert({
+      where: { email: "freddy@churco.com" },
+      update: {},
+      create: { name: "Freddy", email: "freddy@churco.com", password: await bcrypt.hash("Freddy2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+    }),
+    prisma.user.upsert({
+      where: { email: "mauricio@churco.com" },
+      update: {},
+      create: { name: "Mauricio", email: "mauricio@churco.com", password: await bcrypt.hash("Mauricio2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+    }),
+    prisma.user.upsert({
+      where: { email: "carlos@churco.com" },
+      update: {},
+      create: { name: "Carlos", email: "carlos@churco.com", password: await bcrypt.hash("Carlos2026.", 10), role: "EMPLOYEE", branchId: churco.id },
+    }),
+  ]);
+
   // ── Migrate existing data to Sucursal Churco ────────────────────────────────
   await prisma.sale.updateMany({ where: { branchId: null }, data: { branchId: churco.id } }).catch(() => {});
   await prisma.purchase.updateMany({ where: { branchId: null }, data: { branchId: churco.id } }).catch(() => {});
