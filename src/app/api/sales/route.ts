@@ -21,15 +21,13 @@ export async function GET(req: NextRequest) {
   if (to && !isValidDate(to)) return NextResponse.json({ error: "Fecha 'to' inválida" }, { status: 400 });
 
   const branchParam = searchParams.get("branchId");
-  const rawBranchIdGet =
-    session.user.role === "EMPLOYEE"
-      ? session.user.branchId
-      : branchParam && branchParam !== "all"
-      ? branchParam
-      : undefined;
-  const branchId = rawBranchIdGet || undefined;
+  const isEmployee = session.user.role === "EMPLOYEE";
+  const branchId = isEmployee
+    ? undefined
+    : branchParam && branchParam !== "all" ? branchParam : undefined;
 
   const where = {
+    ...(isEmployee && { employeeId: session.user.id }),
     ...(branchId && { branchId }),
     ...(from || to
       ? {

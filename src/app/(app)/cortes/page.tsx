@@ -20,7 +20,7 @@ type Corte = {
   branch?: { id: string; name: string } | null;
 };
 
-type Employee = { id: string; name: string };
+type Employee = { id: string; name: string; email: string };
 
 function CorteModal({
   onSave,
@@ -196,9 +196,10 @@ export default function CortesPage() {
   useEffect(() => {
     fetchCortes();
     if (isAdmin) {
+      const CORTES_EXCLUDED = ["maxwell@churco.com", "freddy@churco.com", "userSuc2@gmail.com"];
       fetch("/api/users?role=EMPLOYEE")
         .then((r) => r.ok ? r.json() : [])
-        .then((data) => setEmployees(Array.isArray(data) ? data : []))
+        .then((data) => setEmployees(Array.isArray(data) ? data.filter((u: Employee) => !CORTES_EXCLUDED.includes(u.email)) : []))
         .catch(() => {});
     }
   }, [isAdmin, fetchCortes]);
