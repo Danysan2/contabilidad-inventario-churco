@@ -126,6 +126,8 @@ body::before {
 }
 .input-premium::placeholder { color: rgba(153,144,124,0.5); font-size: 13px; }
 .input-premium:focus { border-bottom-color: var(--gold-light); }
+select.input-premium { background: #1a1612; color-scheme: dark; }
+select.input-premium option { background: #1a1612; color: #eae1d4; }
 
 /* ── Decorative divider ─────────────────────────────────────────────────────── */
 .divider-gold {
