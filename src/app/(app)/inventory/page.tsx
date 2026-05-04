@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 
 function resolveImage(src: string): string {
@@ -229,6 +230,9 @@ function ProductModal({ product, categories, activeBranch, onSave, onClose }: {
 }
 
 export default function InventoryPage() {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -267,8 +271,18 @@ export default function InventoryPage() {
 
   useEffect(() => {
     fetch("/api/categories").then((r) => r.json()).then(setCategories);
-    fetch("/api/branches").then((r) => r.json()).then(setBranches).catch(() => {});
-  }, []);
+    fetch("/api/branches")
+      .then((r) => r.json())
+      .then((data: Branch[]) => {
+        setBranches(data);
+        // Empleados solo ven Sucursal 2 por defecto
+        if (!isAdmin) {
+          const suc2 = data.find((b) => b.slug === "suc2");
+          if (suc2) setActiveBranch(suc2.id);
+        }
+      })
+      .catch(() => {});
+  }, [isAdmin]);
 
   useEffect(() => {
     const t = setTimeout(fetchProducts, 300);
@@ -321,8 +335,8 @@ export default function InventoryPage() {
         </button>
       </div>
 
-      {/* Branch filter */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-md hide-scrollbar">
+      {/* Branch filter — solo visible para admin */}
+      {isAdmin && <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-md hide-scrollbar">
         {[{ id: "all", name: "Todas las sucursales", slug: "all" }, ...branches].map((b) => {
           const isActive = activeBranch === b.id;
           return (
@@ -339,7 +353,7 @@ export default function InventoryPage() {
             </button>
           );
         })}
-      </div>
+      </div>}
 
       {/* Search & category filters */}
       <div className="flex flex-col lg:flex-row gap-md mb-lg">
