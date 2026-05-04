@@ -197,19 +197,25 @@ export async function GET(req: NextRequest) {
     period === "day" ? totalMonthlyFixed / 30 / 24 :
     totalMonthlyFixed / 30; // per day for week/month
 
-  // Build a map of all purchase buckets, then add fixed amount to each
-  const purchaseMap = new Map(dailyPurchases.map((d) => [d.date, Number(d.total)]));
+  // Convert Date objects from raw SQL to ISO strings to use as Map/Set keys reliably
+  const toKey = (d: string | Date) => {
+    const dt = d instanceof Date ? d : new Date(d);
+    return period === "day"
+      ? dt.toISOString().slice(0, 13) // "2026-05-04T15"
+      : dt.toISOString().slice(0, 10); // "2026-05-04"
+  };
 
-  // Also collect all bucket dates from dailyTotals so buckets with $0 purchases still get fixed expenses
-  const allBucketDates = new Set([
-    ...dailyPurchases.map((d) => d.date),
-    ...dailyTotals.map((d) => d.date),
+  const purchaseMap = new Map(dailyPurchases.map((d) => [toKey(d.date), Number(d.total)]));
+
+  const allBucketKeys = new Set([
+    ...dailyPurchases.map((d) => toKey(d.date)),
+    ...dailyTotals.map((d) => toKey(d.date)),
   ]);
 
-  const dailyExpensesCombined = Array.from(allBucketDates).map((date) => ({
-    date,
-    total: (purchaseMap.get(date) ?? 0) + dailyFixedPerBucket,
-  })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const dailyExpensesCombined = Array.from(allBucketKeys).map((key) => ({
+    date: key,
+    total: (purchaseMap.get(key) ?? 0) + dailyFixedPerBucket,
+  })).sort((a, b) => a.date.localeCompare(b.date));
 
   console.log(`[DASHBOARD] Resultado — totalRevenue=${currentTotal} totalSales=${currentSales._count} branches=${JSON.stringify(branchRevenueNamed.map(b => `${b.name}:${b.revenue}`))} dailyFixedPerBucket=${dailyFixedPerBucket.toFixed(2)}`);
 
