@@ -326,13 +326,13 @@ export default function InventoryPage() {
             )}
           </p>
         </div>
-        <button
+        {isAdmin && <button
           onClick={() => setEditingProduct({})}
           className="btn-gold px-lg py-md rounded flex items-center justify-center gap-sm shrink-0"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           Agregar Producto
-        </button>
+        </button>}
       </div>
 
       {/* Branch filter — solo visible para admin */}
@@ -498,23 +498,25 @@ export default function InventoryPage() {
                   <span className="text-primary font-sans">${Number(product.price).toLocaleString("es-MX")}</span>
                 </div>
 
-                {/* Actions */}
-                <div className={`flex justify-end gap-sm mt-sm md:mt-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity ${lowStock ? "ml-2 md:ml-0" : ""}`}>
-                  <button
-                    onClick={() => setEditingProduct(product)}
-                    className="w-8 h-8 rounded border border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary flex items-center justify-center transition-colors"
-                    title="Editar"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">edit</span>
-                  </button>
-                  <button
-                    onClick={() => setDeleteId(product.id)}
-                    className="w-8 h-8 rounded border border-outline-variant text-on-surface-variant hover:text-error hover:border-error flex items-center justify-center transition-colors"
-                    title="Eliminar"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                  </button>
-                </div>
+                {/* Actions — solo admin */}
+                {isAdmin && (
+                  <div className={`flex justify-end gap-sm mt-sm md:mt-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity ${lowStock ? "ml-2 md:ml-0" : ""}`}>
+                    <button
+                      onClick={() => setEditingProduct(product)}
+                      className="w-8 h-8 rounded border border-outline-variant text-on-surface-variant hover:text-primary hover:border-primary flex items-center justify-center transition-colors"
+                      title="Editar"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
+                    <button
+                      onClick={() => setDeleteId(product.id)}
+                      className="w-8 h-8 rounded border border-outline-variant text-on-surface-variant hover:text-error hover:border-error flex items-center justify-center transition-colors"
+                      title="Eliminar"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })
