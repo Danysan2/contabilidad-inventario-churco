@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell, ComposedChart, Line, Area,
@@ -78,18 +77,35 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   return null;
 };
 
+type EmployeeData = {
+  sales: { id: string; total: number; createdAt: string; items: { product: { name: string }; quantity: number }[] }[];
+  cortes: { id: string; price: number; ownerPct: number; ownerAmount: number; employeeAmount: number; createdAt: string }[];
+};
+
+const CORTES_EMAILS = ["mauricio@churco.com", "carlos@churco.com"];
+
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [empData, setEmpData] = useState<EmployeeData | null>(null);
   const [period, setPeriod] = useState<Period>("week");
   const [branchFilter, setBranchFilter] = useState<string>("all");
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
 
   const isAdmin = session?.user?.role === "ADMIN";
+  const isMauricioOrCarlos = CORTES_EMAILS.includes(session?.user?.email ?? "");
 
-  const fetchData = useCallback(async () => {
+  const getPeriodDates = useCallback(() => {
+    const now = new Date();
+    const from = new Date();
+    if (period === "day") from.setHours(0, 0, 0, 0);
+    else if (period === "week") from.setDate(now.getDate() - 7);
+    else from.setDate(now.getDate() - 30);
+    return { from: from.toISOString(), to: now.toISOString() };
+  }, [period]);
+
+  const fetchAdminData = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ period });
@@ -101,14 +117,146 @@ export default function DashboardPage() {
     }
   }, [period, branchFilter]);
 
+  const fetchEmployeeData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { from, to } = getPeriodDates();
+      const [salesRes, cortesRes] = await Promise.all([
+        fetch(`/api/sales?from=${from}&to=${to}&limit=50`),
+        isMauricioOrCarlos ? fetch(`/api/cortes?from=${from}&to=${to}`) : Promise.resolve(null),
+      ]);
+      const salesJson = salesRes.ok ? await salesRes.json() : { sales: [] };
+      const cortesJson = cortesRes?.ok ? await cortesRes.json() : [];
+      setEmpData({ sales: salesJson.sales ?? [], cortes: cortesJson ?? [] });
+    } finally {
+      setLoading(false);
+    }
+  }, [period, isMauricioOrCarlos, getPeriodDates]);
+
   useEffect(() => {
-    if (!isAdmin) { router.push("/pos"); return; }
-    fetchData();
-    fetch("/api/branches").then((r) => r.json()).then(setBranches).catch(() => {});
-  }, [isAdmin, router, fetchData]);
+    if (session === null) return; // no session yet
+    if (isAdmin) {
+      fetchAdminData();
+      fetch("/api/branches").then((r) => r.json()).then(setBranches).catch(() => {});
+    } else if (session) {
+      fetchEmployeeData();
+    }
+  }, [isAdmin, session, fetchAdminData, fetchEmployeeData]);
 
-  if (!isAdmin) return null;
+  // ── Employee view ────────────────────────────────────────────────────────────
+  if (!isAdmin) {
+    const empSales = empData?.sales ?? [];
+    const empCortes = empData?.cortes ?? [];
+    const empTotalRevenue = empSales.reduce((s, v) => s + Number(v.total), 0);
+    const empAvgTicket = empSales.length > 0 ? empTotalRevenue / empSales.length : 0;
+    const cortesTotalBruto = empCortes.reduce((s, c) => s + c.price, 0);
+    const cortesTotalDueno = empCortes.reduce((s, c) => s + c.ownerAmount, 0);
+    const cortesTotalEmpleado = empCortes.reduce((s, c) => s + c.employeeAmount, 0);
+    const labelStyle = { color: "rgba(252,85,0,0.55)" };
+    const periodLabel = period === "day" ? "Hoy" : period === "week" ? "Esta semana" : "Este mes";
 
+    return (
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl">
+          <div>
+            <h2 className="font-display text-4xl font-bold" style={{ color: "#eae1d4" }}>Mi Panel</h2>
+            <p className="font-sans text-sm mt-1" style={{ color: "rgba(234,225,212,0.45)" }}>
+              {session?.user?.name ?? "Empleado"} · {periodLabel}
+            </p>
+          </div>
+          <div className="flex items-center gap-1 p-1 rounded-lg" style={{ background: "var(--surface-2)", border: "1px solid rgba(252,85,0,0.1)" }}>
+            {(["day", "week", "month"] as Period[]).map((p) => (
+              <button key={p} onClick={() => setPeriod(p)}
+                className="px-4 py-2 rounded font-sans text-xs font-bold uppercase tracking-wider transition-all"
+                style={period === p ? { background: "var(--gold)", color: "#1a0800" } : { color: "rgba(234,225,212,0.45)" }}>
+                {p === "day" ? "Hoy" : p === "week" ? "Semana" : "Mes"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-md mb-xl">
+            {[1, 2, 3].map((i) => <div key={i} className="card-premium rounded-xl p-lg h-24 animate-pulse" />)}
+          </div>
+        ) : (
+          <>
+            {/* Ventas cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-sm mb-xl">
+              <div className="card-premium rounded-xl p-lg flex flex-col gap-sm">
+                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.12em]" style={labelStyle}>Ventas</span>
+                <div className="font-display text-3xl font-bold" style={{ color: "#eae1d4" }}>{empSales.length}</div>
+              </div>
+              <div className="card-premium rounded-xl p-lg flex flex-col gap-sm">
+                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.12em]" style={labelStyle}>Total vendido</span>
+                <div className="font-display text-2xl font-bold text-gold-gradient">${empTotalRevenue.toLocaleString("es-CO")}</div>
+              </div>
+              <div className="card-premium rounded-xl p-lg flex flex-col gap-sm col-span-2 md:col-span-1">
+                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.12em]" style={labelStyle}>Ticket promedio</span>
+                <div className="font-display text-2xl font-bold" style={{ color: "#eae1d4" }}>${empAvgTicket.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</div>
+              </div>
+            </div>
+
+            {/* Cortes cards — solo Mauricio y Carlos */}
+            {isMauricioOrCarlos && (
+              <div className="mb-xl">
+                <h3 className="font-display text-xl font-semibold mb-md" style={{ color: "#eae1d4" }}>Mis Cortes</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-sm">
+                  <div className="card-premium rounded-lg px-4 py-3 text-center">
+                    <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={labelStyle}>Cortes</div>
+                    <div className="font-display text-2xl font-bold" style={{ color: "#eae1d4" }}>{empCortes.length}</div>
+                  </div>
+                  <div className="card-premium rounded-lg px-4 py-3 text-center">
+                    <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={labelStyle}>Total bruto</div>
+                    <div className="font-display text-xl font-bold text-gold-gradient">${cortesTotalBruto.toLocaleString("es-CO")}</div>
+                  </div>
+                  <div className="card-premium rounded-lg px-4 py-3 text-center">
+                    <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={labelStyle}>Para el dueño (35%)</div>
+                    <div className="font-display text-xl font-bold" style={{ color: "#fc5500" }}>${cortesTotalDueno.toLocaleString("es-CO")}</div>
+                  </div>
+                  <div className="card-premium rounded-lg px-4 py-3 text-center">
+                    <div className="font-sans text-[9px] font-bold uppercase tracking-widest mb-1" style={labelStyle}>Para mí (65%)</div>
+                    <div className="font-display text-xl font-bold" style={{ color: "#eae1d4" }}>${cortesTotalEmpleado.toLocaleString("es-CO")}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mis ventas recientes */}
+            <div className="card-premium rounded-xl p-lg">
+              <h3 className="font-display text-xl font-semibold mb-lg" style={{ color: "#eae1d4" }}>Mis Ventas Recientes</h3>
+              {empSales.length ? (
+                <ul className="flex flex-col gap-sm">
+                  {empSales.slice(0, 10).map((s) => (
+                    <li key={s.id} className="flex items-center justify-between py-2" style={{ borderBottom: "1px solid rgba(252,85,0,0.07)" }}>
+                      <div>
+                        <div className="font-sans text-sm font-semibold" style={{ color: "#eae1d4" }}>
+                          {s.items.map((i) => `${i.product.name} x${i.quantity}`).join(", ").slice(0, 50)}
+                        </div>
+                        <div className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.4)" }}>
+                          {new Date(s.createdAt).toLocaleString("es-CO", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      </div>
+                      <span className="font-display font-bold text-sm" style={{ color: "var(--gold-light)" }}>
+                        ${Number(s.total).toLocaleString("es-CO")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="flex items-center justify-center h-24 font-sans text-sm" style={{ color: "rgba(234,225,212,0.35)" }}>
+                  Sin ventas en este período
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // ── Admin view ────────────────────────────────────────────────────────────────
   // Merge daily totals + expenses into one chart dataset
   const expenseMap = new Map((data?.dailyExpenses ?? []).map((d) => {
     const key = period === "day"

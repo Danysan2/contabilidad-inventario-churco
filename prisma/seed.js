@@ -67,7 +67,6 @@ async function main() {
     { sku: "SNK-008", name: "NatuChips",             price: 2000,  stock: 20, minStock: 6,  image: "/imagenes/NatuChips.webp",              categoryId: comida.id },
     { sku: "SNK-009", name: "Galletas",              price: 1500,  stock: 24, minStock: 8,  image: "/imagenes/Galletas.png",                categoryId: comida.id },
     { sku: "SNK-010", name: "Maní",                  price: 1500,  stock: 20, minStock: 6,  image: "/imagenes/Maní.png",                    categoryId: comida.id },
-    { sku: "PKG-001", name: "Combo Corte + Bebida",  price: 35000, stock: 50, minStock: 0,  image: null,                                    categoryId: comida.id },
 
     // ── Belleza ──────────────────────────────────────────────────────────────
     { sku: "HR-001",  name: "Cera en Polvo Rolda",   price: 18000, stock: 10, minStock: 3,  image: "/imagenes/Cera en Polvo Rolda.png",     categoryId: belleza.id },
@@ -83,6 +82,9 @@ async function main() {
     await prisma.product.upsert({ where: { sku: p.sku }, update: { categoryId: p.categoryId }, create: p });
   }
 
+  // Desactivar Combo Corte + Bebida si existe (ya no se usa)
+  await prisma.product.updateMany({ where: { sku: "PKG-001" }, data: { active: false } }).catch(() => {});
+
   // ── Admin user ──────────────────────────────────────────────────────────────
   const hashedAdmin = await bcrypt.hash("Churco2026.", 10);
   await prisma.user.upsert({
@@ -91,13 +93,8 @@ async function main() {
     create: { name: "churcoadmin", email: "churcoadmin@churco.com", password: hashedAdmin, role: "ADMIN", branchId: churco.id },
   });
 
-  // ── Employee user ───────────────────────────────────────────────────────────
-  const hashedEmployee = await bcrypt.hash("Empleado2026.", 10);
-  await prisma.user.upsert({
-    where: { email: "userSuc2@gmail.com" },
-    update: { name: "userSuc2", password: hashedEmployee, branchId: suc2.id },
-    create: { name: "userSuc2", email: "userSuc2@gmail.com", password: hashedEmployee, role: "EMPLOYEE", branchId: suc2.id },
-  });
+  // Desactivar usuario genérico userSuc2 (reemplazado por barberos individuales)
+  await prisma.user.updateMany({ where: { email: "userSuc2@gmail.com" }, data: { active: false } }).catch(() => {});
 
   // ── Barber employees ────────────────────────────────────────────────────────
   await Promise.all([

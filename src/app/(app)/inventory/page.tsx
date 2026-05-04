@@ -386,7 +386,7 @@ export default function InventoryPage() {
                 <div className={`flex items-center gap-md md:hidden mb-2 ${lowStock ? "ml-2" : ""}`}>
                   <div className="w-12 h-12 rounded bg-surface-container-high overflow-hidden shrink-0">
                     {product.image ? (
-                      <Image src={product.image} alt={product.name} width={48} height={48} className="w-full h-full object-cover" />
+                      <Image src={resolveImage(product.image)} alt={product.name} width={48} height={48} className="w-full h-full object-cover" unoptimized={!product.image.startsWith("http")} />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <span className="material-symbols-outlined text-outline text-[20px]">inventory_2</span>

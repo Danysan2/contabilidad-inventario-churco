@@ -32,7 +32,7 @@ function CorteModal({
   lastOwnerPct: number;
 }) {
   const [price, setPrice] = useState("");
-  const [ownerPct, setOwnerPct] = useState(String(lastOwnerPct || 40));
+  const [ownerPct, setOwnerPct] = useState("35");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");

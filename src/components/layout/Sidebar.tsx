@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: "dashboard", adminOnly: true },
-  { href: "/movements", label: "Movimientos", icon: "history", adminOnly: false },
-  { href: "/inventory", label: "Inventario", icon: "inventory_2", adminOnly: false },
-  { href: "/pos", label: "Punto de Venta", icon: "point_of_sale", adminOnly: false },
-  { href: "/cortes", label: "Cortes", icon: "content_cut", adminOnly: false },
-  { href: "/catalogo", label: "Catálogo", icon: "photo_library", adminOnly: false },
-  { href: "/ranking", label: "Ranking", icon: "military_tech", adminOnly: true },
-  { href: "/egresos", label: "Egresos", icon: "trending_down", adminOnly: true },
+  { href: "/dashboard", label: "Dashboard", icon: "dashboard", adminOnly: false, allowedEmails: undefined as string[] | undefined },
+  { href: "/movements", label: "Movimientos", icon: "history", adminOnly: false, allowedEmails: undefined as string[] | undefined },
+  { href: "/inventory", label: "Inventario", icon: "inventory_2", adminOnly: false, allowedEmails: undefined as string[] | undefined },
+  { href: "/pos", label: "Punto de Venta", icon: "point_of_sale", adminOnly: false, allowedEmails: undefined as string[] | undefined },
+  { href: "/cortes", label: "Cortes", icon: "content_cut", adminOnly: false, allowedEmails: ["mauricio@churco.com", "carlos@churco.com"] },
+  { href: "/catalogo", label: "Catálogo", icon: "photo_library", adminOnly: false, allowedEmails: undefined as string[] | undefined },
+  { href: "/ranking", label: "Ranking", icon: "military_tech", adminOnly: true, allowedEmails: undefined as string[] | undefined },
+  { href: "/egresos", label: "Egresos", icon: "trending_down", adminOnly: true, allowedEmails: undefined as string[] | undefined },
 ];
 
 export default function Sidebar() {
@@ -20,7 +20,12 @@ export default function Sidebar() {
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "ADMIN";
 
-  const visible = navItems.filter((i) => !i.adminOnly || isAdmin);
+  const userEmail = session?.user?.email ?? "";
+  const visible = navItems.filter((i) => {
+    if (i.adminOnly && !isAdmin) return false;
+    if (i.allowedEmails && !isAdmin && !i.allowedEmails.includes(userEmail)) return false;
+    return true;
+  });
 
   return (
     <nav

@@ -68,11 +68,8 @@ async function main() {
     update: { categoryId: comida.id },
     create: { name: "Maní Tostado con Sal", sku: "SNK-002", price: 25.0, stock: 4, minStock: 5, categoryId: comida.id },
   });
-  await prisma.product.upsert({
-    where: { sku: "PKG-001" },
-    update: { categoryId: comida.id },
-    create: { name: "Combo Corte + Bebida", sku: "PKG-001", price: 120.0, stock: 50, minStock: 0, categoryId: comida.id },
-  });
+  // Desactivar Combo Corte + Bebida si existe (ya no se usa)
+  await prisma.product.updateMany({ where: { sku: "PKG-001" }, data: { active: false } }).catch(() => {});
   await prisma.product.upsert({
     where: { sku: "BRD-001" },
     update: { categoryId: belleza.id },
@@ -98,21 +95,8 @@ async function main() {
     create: { name: "churcoadmin", email: "churcoadmin@churco.com", password: hashedAdmin, role: "ADMIN", branchId: churco.id },
   }).catch(() => { /* ya existe con nuevo email, ignorar */ });
 
-  // ── Employee user ───────────────────────────────────────────────────────────
-  const hashedEmployee = await bcrypt.hash("Empleado2026.", 10);
-  await prisma.user.upsert({
-    where: { email: "userSuc2@gmail.com" },
-    update: { name: "userSuc2", password: hashedEmployee, branchId: suc2.id },
-    create: { name: "userSuc2", email: "userSuc2@gmail.com", password: hashedEmployee, role: "EMPLOYEE", branchId: suc2.id },
-  });
-  // fallback: old emails
-  for (const oldEmail of ["empleado@groomandgold.com", "userEmpleado@churco.com"]) {
-    await prisma.user.upsert({
-      where: { email: oldEmail },
-      update: { name: "userSuc2", email: "userSuc2@gmail.com", password: hashedEmployee, branchId: suc2.id },
-      create: { name: "userSuc2", email: "userSuc2@gmail.com", password: hashedEmployee, role: "EMPLOYEE", branchId: suc2.id },
-    }).catch(() => { /* ya migrado, ignorar */ });
-  }
+  // Desactivar usuario genérico userSuc2 (ya no se usa, reemplazado por barberos individuales)
+  await prisma.user.updateMany({ where: { email: "userSuc2@gmail.com" }, data: { active: false } }).catch(() => {});
 
   // ── Barber employees ────────────────────────────────────────────────────────
   await Promise.all([
