@@ -127,6 +127,26 @@ async function main() {
   await prisma.purchase.updateMany({ where: { branchId: null }, data: { branchId: churco.id } }).catch(() => {});
   await prisma.fixedExpense.updateMany({ where: { branchId: null }, data: { branchId: churco.id } }).catch(() => {});
 
+  // ── BranchProduct: inicializar stock por sucursal ───────────────────────────
+  const allProducts = await prisma.product.findMany();
+  for (const product of allProducts) {
+    // Churco hereda el stock global actual (update: {} = no sobreescribir en re-seed)
+    await prisma.branchProduct.upsert({
+      where: { productId_branchId: { productId: product.id, branchId: churco.id } },
+      update: {},
+      create: { productId: product.id, branchId: churco.id, stock: product.stock, minStock: product.minStock },
+    });
+    // Sucursal 2 comienza en 0 stock (update: {} = no sobreescribir en re-seed)
+    await prisma.branchProduct.upsert({
+      where: { productId_branchId: { productId: product.id, branchId: suc2.id } },
+      update: {},
+      create: { productId: product.id, branchId: suc2.id, stock: 0, minStock: product.minStock },
+    });
+  }
+
+  // Migrar StockMovements sin branchId a Sucursal Churco
+  await prisma.stockMovement.updateMany({ where: { branchId: null }, data: { branchId: churco.id } }).catch(() => {});
+
   console.log("✅ Seed completado — ContaChurco (multi-sucursal)");
 }
 

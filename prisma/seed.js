@@ -135,6 +135,26 @@ async function main() {
     `UPDATE "User" SET "branchId" = '${churco.id}' WHERE "branchId" IS NULL OR "branchId" = ''`
   ).catch(() => {});
 
+  // ── BranchProduct: inicializar stock por sucursal ───────────────────────────
+  const allProducts = await prisma.product.findMany();
+  for (const product of allProducts) {
+    await prisma.branchProduct.upsert({
+      where: { productId_branchId: { productId: product.id, branchId: churco.id } },
+      update: {},
+      create: { productId: product.id, branchId: churco.id, stock: product.stock, minStock: product.minStock },
+    });
+    await prisma.branchProduct.upsert({
+      where: { productId_branchId: { productId: product.id, branchId: suc2.id } },
+      update: {},
+      create: { productId: product.id, branchId: suc2.id, stock: 0, minStock: product.minStock },
+    });
+  }
+
+  // Migrar StockMovements sin branchId a Sucursal Churco
+  await prisma.$executeRawUnsafe(
+    `UPDATE "StockMovement" SET "branchId" = '${churco.id}' WHERE "branchId" IS NULL`
+  ).catch(() => {});
+
   console.log("✅ Seed completado — ContaChurco (multi-sucursal)");
 }
 

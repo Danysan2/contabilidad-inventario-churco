@@ -13,6 +13,8 @@ export async function GET(req: NextRequest) {
   const category = searchParams.get("category");
   const search = searchParams.get("search");
   const activeOnly = searchParams.get("active") !== "false";
+  const branchParam = searchParams.get("branchId");
+  const branchId = branchParam && branchParam !== "all" ? branchParam : undefined;
 
   const products = await prisma.product.findMany({
     where: {
@@ -20,7 +22,10 @@ export async function GET(req: NextRequest) {
       ...(category && category !== "all" && { category: { slug: category } }),
       ...(search && { name: { contains: search, mode: "insensitive" } }),
     },
-    include: { category: true },
+    include: {
+      category: true,
+      branchStock: branchId ? { where: { branchId } } : true,
+    },
     orderBy: { name: "asc" },
   });
 
@@ -39,10 +44,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Datos inválidos", details: parsed.error.flatten() }, { status: 400 });
   }
   const { name, sku, price, stock, minStock, image, categoryId } = parsed.data;
+  const branchId = (body.branchId as string | undefined) || undefined;
 
-  const product = await prisma.product.create({
-    data: { name, sku, price, stock: stock ?? 0, minStock: minStock ?? 5, image, categoryId },
-    include: { category: true },
+  const product = await prisma.$transaction(async (tx) => {
+    const created = await tx.product.create({
+      data: { name, sku, price, stock: stock ?? 0, minStock: minStock ?? 5, image, categoryId },
+      include: { category: true, branchStock: true },
+    });
+
+    // Inicializar BranchProduct para todas las sucursales activas
+    const branches = await tx.branch.findMany({ where: { active: true }, select: { id: true } });
+    for (const branch of branches) {
+      const isSelectedBranch = branchId ? branch.id === branchId : false;
+      await tx.branchProduct.create({
+        data: {
+          productId: created.id,
+          branchId: branch.id,
+          stock: isSelectedBranch ? (stock ?? 0) : 0,
+          minStock: minStock ?? 5,
+        },
+      });
+    }
+
+    return created;
   });
 
   // Sync inventory sheet

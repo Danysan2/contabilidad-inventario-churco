@@ -68,18 +68,27 @@ export async function POST(req: NextRequest) {
     });
 
     for (const item of items) {
+      // Stock por sucursal
+      if (branchId) {
+        await tx.branchProduct.upsert({
+          where: { productId_branchId: { productId: item.productId, branchId } },
+          update: { stock: { increment: item.quantity } },
+          create: { productId: item.productId, branchId, stock: item.quantity, minStock: 5 },
+        });
+      }
+
+      // Stock global (mantener en sync)
       await tx.product.update({
         where: { id: item.productId },
-        data: {
-          stock: { increment: item.quantity },
-          costPrice: item.unitCost,
-        },
+        data: { stock: { increment: item.quantity }, costPrice: item.unitCost },
       });
+
       await tx.stockMovement.create({
         data: {
           productId: item.productId,
           type: "IN",
           quantity: item.quantity,
+          branchId: branchId ?? null,
           note: `Compra registrada${note ? `: ${note}` : ""}`,
         },
       });

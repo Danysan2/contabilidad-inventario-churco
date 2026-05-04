@@ -289,6 +289,7 @@ export default function EgresosPage() {
   const [fixedExpenses, setFixedExpenses] = useState<FixedExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"compras" | "gastos">("compras");
+  const [filterBranchId, setFilterBranchId] = useState<string>("all");
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [editExpense, setEditExpense] = useState<Partial<FixedExpense> | null>(null);
   const [deleteExpenseId, setDeleteExpenseId] = useState<string | null>(null);
@@ -300,9 +301,12 @@ export default function EgresosPage() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
+      const purchUrl = filterBranchId !== "all"
+        ? `/api/egresos?branchId=${filterBranchId}`
+        : "/api/egresos";
       const [prodRes, purchRes, fxRes, branchRes] = await Promise.all([
         fetch("/api/products?active=false"),
-        fetch("/api/egresos"),
+        fetch(purchUrl),
         fetch("/api/gastos-fijos"),
         fetch("/api/branches"),
       ]);
@@ -311,7 +315,7 @@ export default function EgresosPage() {
       if (fxRes.ok) setFixedExpenses(await fxRes.json());
       if (branchRes.ok) setBranches(await branchRes.json());
     } finally { setLoading(false); }
-  }, []);
+  }, [filterBranchId]);
 
   useEffect(() => { if (isAdmin) fetchAll(); }, [isAdmin, fetchAll]);
 
@@ -384,6 +388,26 @@ export default function EgresosPage() {
 
       {/* ── Compras tab ── */}
       {tab === "compras" && (
+        <>
+        {/* Branch filter pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-md" style={{ scrollbarWidth: "none" }}>
+          {[{ id: "all", name: "Todas las sucursales" }, ...branches].map((b) => {
+            const isActive = filterBranchId === b.id;
+            return (
+              <button
+                key={b.id}
+                onClick={() => setFilterBranchId(b.id)}
+                className="font-sans text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition-all"
+                style={isActive
+                  ? { background: "rgba(252,85,0,0.15)", color: "var(--gold-light)", border: "1px solid rgba(252,85,0,0.35)" }
+                  : { background: "var(--surface-2)", color: "rgba(234,225,212,0.4)", border: "1px solid rgba(252,85,0,0.06)" }
+                }
+              >
+                {b.name}
+              </button>
+            );
+          })}
+        </div>
         <div className="card-premium rounded-lg overflow-hidden">
           <div className="hidden md:grid grid-cols-[140px_1fr_1fr_120px_60px] gap-md p-md font-sans text-[10px] font-bold uppercase tracking-wider"
             style={{ borderBottom: "1px solid rgba(252,85,0,0.08)", color: "rgba(252,85,0,0.5)" }}>
@@ -409,8 +433,16 @@ export default function EgresosPage() {
                   onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(252,85,0,0.03)")}
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
                 >
-                  <div className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.5)" }}>
-                    {new Date(p.date).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" })}
+                  <div>
+                    <div className="font-sans text-xs" style={{ color: "rgba(234,225,212,0.5)" }}>
+                      {new Date(p.date).toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" })}
+                    </div>
+                    {p.branch && filterBranchId === "all" && (
+                      <span className="inline-block font-sans text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mt-0.5"
+                        style={{ background: "rgba(252,85,0,0.08)", color: "rgba(252,85,0,0.6)" }}>
+                        {p.branch.name}
+                      </span>
+                    )}
                   </div>
                   <div className="font-sans text-sm" style={{ color: "#eae1d4" }}>
                     {p.items.map((i) => `${i.product.name} ×${i.quantity}`).join(", ")}
@@ -434,6 +466,7 @@ export default function EgresosPage() {
             })
           )}
         </div>
+        </>
       )}
 
       {/* ── Gastos Fijos tab ── */}

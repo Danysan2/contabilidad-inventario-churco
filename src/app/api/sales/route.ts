@@ -111,15 +111,27 @@ export async function POST(req: NextRequest) {
       console.log(`[SALE:${reqId}] Iniciando transacción...`);
 
       for (const item of items) {
-        const product = await tx.product.findUnique({ where: { id: item.productId }, select: { name: true, stock: true } });
-        if (!product) {
-          console.log(`[SALE:${reqId}] ✗ Producto no encontrado: ${item.productId}`);
-          throw new Error(`Producto no encontrado: ${item.productId}`);
-        }
-        console.log(`[SALE:${reqId}] Stock "${product.name}": disponible=${product.stock}, solicitado=${item.quantity}`);
-        if (product.stock < item.quantity) {
-          console.log(`[SALE:${reqId}] ✗ Stock insuficiente para "${product.name}"`);
-          throw new Error(`Stock insuficiente para "${product.name}": disponible ${product.stock}, solicitado ${item.quantity}`);
+        if (branchId) {
+          const bp = await tx.branchProduct.findUnique({
+            where: { productId_branchId: { productId: item.productId, branchId } },
+          });
+          const available = bp?.stock ?? 0;
+          console.log(`[SALE:${reqId}] Stock branch "${branchId}" producto ${item.productId}: disponible=${available}, solicitado=${item.quantity}`);
+          if (available < item.quantity) {
+            console.log(`[SALE:${reqId}] ✗ Stock insuficiente en sucursal para ${item.productId}`);
+            throw new Error(`Stock insuficiente en esta sucursal: disponible ${available}, solicitado ${item.quantity}`);
+          }
+        } else {
+          const product = await tx.product.findUnique({ where: { id: item.productId }, select: { name: true, stock: true } });
+          if (!product) {
+            console.log(`[SALE:${reqId}] ✗ Producto no encontrado: ${item.productId}`);
+            throw new Error(`Producto no encontrado: ${item.productId}`);
+          }
+          console.log(`[SALE:${reqId}] Stock global "${product.name}": disponible=${product.stock}, solicitado=${item.quantity}`);
+          if (product.stock < item.quantity) {
+            console.log(`[SALE:${reqId}] ✗ Stock insuficiente para "${product.name}"`);
+            throw new Error(`Stock insuficiente para "${product.name}": disponible ${product.stock}, solicitado ${item.quantity}`);
+          }
         }
       }
 
@@ -140,12 +152,20 @@ export async function POST(req: NextRequest) {
       console.log(`[SALE:${reqId}] Sale creada id=${created.id} branch="${created.branch?.name ?? "ninguna"}"`);
 
       for (const item of items) {
+        // Decrementar stock por sucursal
+        if (branchId) {
+          await tx.branchProduct.update({
+            where: { productId_branchId: { productId: item.productId, branchId } },
+            data: { stock: { decrement: item.quantity } },
+          });
+        }
+        // Mantener stock global en sync
         await tx.product.update({
           where: { id: item.productId },
           data: { stock: { decrement: item.quantity } },
         });
         await tx.stockMovement.create({
-          data: { productId: item.productId, type: "OUT", quantity: item.quantity, note: `Venta ${created.id}` },
+          data: { productId: item.productId, type: "OUT", quantity: item.quantity, branchId: branchId ?? null, note: `Venta ${created.id}` },
         });
       }
       console.log(`[SALE:${reqId}] Stock decrementado y movimientos creados`);

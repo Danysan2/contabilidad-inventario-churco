@@ -9,24 +9,34 @@ function resolveImage(src: string): string {
 }
 
 type Category = { id: string; name: string; slug: string };
+type Branch = { id: string; name: string; slug: string };
+type BranchStock = { branchId: string; stock: number; minStock: number };
 type Product = {
   id: string; name: string; sku: string; price: number; stock: number;
   minStock: number; image: string | null; active: boolean;
   category: Category;
+  branchStock: BranchStock[];
 };
 
-function ProductModal({ product, categories, onSave, onClose }: {
+function ProductModal({ product, categories, activeBranch, onSave, onClose }: {
   product: Partial<Product> | null;
   categories: Category[];
-  onSave: (data: Partial<Product>) => Promise<void>;
+  activeBranch: string;
+  onSave: (data: Partial<Product> & { branchId?: string }) => Promise<void>;
   onClose: () => void;
 }) {
   const isNew = !product?.id;
+
+  // Para edición: mostrar el stock de la sucursal activa (o global si "all")
+  const branchStockVal = activeBranch !== "all"
+    ? (product?.branchStock?.find((b) => b.branchId === activeBranch)?.stock ?? product?.stock ?? 0)
+    : (product?.stock ?? 0);
+
   const [form, setForm] = useState({
     name: product?.name ?? "",
     sku: product?.sku ?? "",
     price: product?.price ?? 0,
-    stock: product?.stock ?? 0,
+    stock: branchStockVal,
     minStock: product?.minStock ?? 5,
     image: product?.image ?? "",
     categoryId: product?.category?.id ?? (categories[0]?.id ?? ""),
@@ -48,7 +58,8 @@ function ProductModal({ product, categories, onSave, onClose }: {
     setSaving(true);
     setError("");
     try {
-      await onSave({ ...form, id: product?.id });
+      const branchId = activeBranch !== "all" ? activeBranch : undefined;
+      await onSave({ ...form, id: product?.id, branchId });
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar");
@@ -56,6 +67,10 @@ function ProductModal({ product, categories, onSave, onClose }: {
       setSaving(false);
     }
   }
+
+  const stockLabel = isNew
+    ? activeBranch !== "all" ? "Stock inicial (esta sucursal)" : "Stock inicial"
+    : activeBranch !== "all" ? "Stock actual (esta sucursal)" : "Stock actual (global)";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 pb-24 md:pb-4">
@@ -109,8 +124,8 @@ function ProductModal({ product, categories, onSave, onClose }: {
             </div>
             {[
               { label: "Precio *", key: "price", type: "number", step: "0.01" },
-              { label: "Stock actual", key: "stock", type: "number" },
-              { label: "Stock mínimo", key: "minStock", type: "number" },
+              { label: stockLabel, key: "stock", type: "number", step: undefined },
+              { label: "Stock mínimo", key: "minStock", type: "number", step: undefined },
             ].map(({ label, key, type, step }) => (
               <div key={key} className="flex flex-col gap-2">
                 <label className="font-sans text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(252,85,0,0.6)" }}>
@@ -216,11 +231,25 @@ function ProductModal({ product, categories, onSave, onClose }: {
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [activeBranch, setActiveBranch] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null | undefined>(undefined);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  function getDisplayStock(product: Product): { stock: number; minStock: number } {
+    if (activeBranch === "all") {
+      const total = product.branchStock.reduce((s, b) => s + b.stock, 0);
+      const maxMin = product.branchStock.length > 0
+        ? Math.max(...product.branchStock.map((b) => b.minStock))
+        : product.minStock;
+      return { stock: total, minStock: maxMin };
+    }
+    const bp = product.branchStock.find((b) => b.branchId === activeBranch);
+    return { stock: bp?.stock ?? 0, minStock: bp?.minStock ?? product.minStock };
+  }
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -228,15 +257,17 @@ export default function InventoryPage() {
       const params = new URLSearchParams({ active: "false" });
       if (activeCategory !== "all") params.set("category", activeCategory);
       if (search) params.set("search", search);
+      if (activeBranch !== "all") params.set("branchId", activeBranch);
       const res = await fetch(`/api/products?${params}`);
       if (res.ok) setProducts(await res.json());
     } finally {
       setLoading(false);
     }
-  }, [activeCategory, search]);
+  }, [activeCategory, search, activeBranch]);
 
   useEffect(() => {
     fetch("/api/categories").then((r) => r.json()).then(setCategories);
+    fetch("/api/branches").then((r) => r.json()).then(setBranches).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -244,7 +275,7 @@ export default function InventoryPage() {
     return () => clearTimeout(t);
   }, [fetchProducts]);
 
-  async function handleSave(data: Partial<Product>) {
+  async function handleSave(data: Partial<Product> & { branchId?: string }) {
     const url = data.id ? `/api/products/${data.id}` : "/api/products";
     const method = data.id ? "PUT" : "POST";
     const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
@@ -261,7 +292,10 @@ export default function InventoryPage() {
     fetchProducts();
   }
 
-  const lowStockCount = products.filter((p) => p.stock <= p.minStock && p.active).length;
+  const lowStockCount = products.filter((p) => {
+    const { stock, minStock } = getDisplayStock(p);
+    return stock <= minStock && p.active;
+  }).length;
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -287,7 +321,27 @@ export default function InventoryPage() {
         </button>
       </div>
 
-      {/* Search & filters */}
+      {/* Branch filter */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-md hide-scrollbar">
+        {[{ id: "all", name: "Todas las sucursales", slug: "all" }, ...branches].map((b) => {
+          const isActive = activeBranch === b.id;
+          return (
+            <button
+              key={b.id}
+              onClick={() => setActiveBranch(b.id)}
+              className="font-sans text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-full whitespace-nowrap shrink-0 transition-all"
+              style={isActive
+                ? { background: "rgba(252,85,0,0.15)", color: "var(--gold-light)", border: "1px solid rgba(252,85,0,0.35)" }
+                : { background: "var(--surface-2)", color: "rgba(234,225,212,0.4)", border: "1px solid rgba(252,85,0,0.06)" }
+              }
+            >
+              {b.name}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Search & category filters */}
       <div className="flex flex-col lg:flex-row gap-md mb-lg">
         <div className="relative flex-1 max-w-md">
           <span
@@ -360,14 +414,15 @@ export default function InventoryPage() {
           </div>
         ) : (
           products.map((product) => {
-            const lowStock = product.stock <= product.minStock;
+            const { stock: displayStock, minStock: displayMinStock } = getDisplayStock(product);
+            const lowStock = displayStock <= displayMinStock;
             return (
               <div
                 key={product.id}
                 className={`grid grid-cols-1 md:grid-cols-[80px_2fr_1fr_1fr_1fr_140px] gap-y-sm gap-x-md p-md items-center transition-colors group relative ${!product.active ? "opacity-50" : ""}`}
-            style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(252,85,0,0.03)")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
+                style={{ borderBottom: "1px solid rgba(252,85,0,0.06)" }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(252,85,0,0.03)")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
               >
                 {lowStock && <div className="absolute left-0 top-0 bottom-0 w-1 bg-error rounded-l-lg" />}
 
@@ -419,8 +474,8 @@ export default function InventoryPage() {
                   <span className="md:hidden font-label-caps text-label-caps text-on-surface-variant">Stock:</span>
                   <div className="flex items-center justify-end gap-1">
                     {lowStock && <span className="material-symbols-outlined text-[14px] text-error icon-fill">warning</span>}
-                    <span className={`font-sans ${lowStock ? "text-error font-bold" : "text-on-surface"}`}>{product.stock}</span>
-                    <span className="text-on-surface-variant text-xs">/ {product.minStock}</span>
+                    <span className={`font-sans ${lowStock ? "text-error font-bold" : "text-on-surface"}`}>{displayStock}</span>
+                    <span className="text-on-surface-variant text-xs">/ {displayMinStock}</span>
                   </div>
                 </div>
 
@@ -457,6 +512,7 @@ export default function InventoryPage() {
         <ProductModal
           product={editingProduct}
           categories={categories}
+          activeBranch={activeBranch}
           onSave={handleSave}
           onClose={() => setEditingProduct(undefined)}
         />
